@@ -24,14 +24,13 @@ class LoginActivity : AppCompatActivity() {
         val tvError = findViewById<TextView>(R.id.tvError)
 
         btnLogin.setOnClickListener {
+            tvError.visibility = View.GONE
             viewModel.login(etEmail.text.toString(), etPassword.text.toString())
         }
 
-        // Observar resultado del login
         viewModel.loginResult.observe(this) { response ->
             response?.let {
                 if (it.success && it.suscriptor != null) {
-                    // Guardar sesión localmente
                     val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
                     prefs.edit()
                         .putInt("userId", it.suscriptor.id)
@@ -39,8 +38,6 @@ class LoginActivity : AppCompatActivity() {
                         .putString("token", it.token)
                         .putBoolean("suscripcionActiva", it.suscriptor.suscripcionActiva)
                         .apply()
-
-                    // Ir a la pantalla principal
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 } else {
@@ -50,15 +47,14 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // Observar errores
         viewModel.errorMessage.observe(this) { msg ->
             msg?.let {
                 tvError.text = it
                 tvError.visibility = View.VISIBLE
+                viewModel.clearError()
             }
         }
 
-        // Loading state
         viewModel.isLoading.observe(this) { loading ->
             btnLogin.isEnabled = !loading
             btnLogin.text = if (loading) "Cargando..." else "Iniciar Sesión"

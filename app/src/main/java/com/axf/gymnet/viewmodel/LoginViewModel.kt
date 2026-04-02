@@ -7,6 +7,7 @@ import com.axf.gymnet.data.LoginRequest
 import com.axf.gymnet.data.LoginResponse
 import com.axf.gymnet.network.RetrofitClient
 import kotlinx.coroutines.launch
+
 class LoginViewModel : ViewModel() {
 
     val loginResult = MutableLiveData<LoginResponse?>()
@@ -18,7 +19,6 @@ class LoginViewModel : ViewModel() {
             errorMessage.value = "Por favor completa todos los campos"
             return
         }
-
         isLoading.value = true
         viewModelScope.launch {
             try {
@@ -36,5 +36,9 @@ class LoginViewModel : ViewModel() {
                 isLoading.value = false
             }
         }
+    }
+
+    fun clearError() {
+        errorMessage.value = null
     }
 }
