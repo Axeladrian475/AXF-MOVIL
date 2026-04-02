@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F2F2F2">
@@ -35,7 +36,8 @@
                     android:layout_height="32dp"
                     android:src="@drawable/logo_axf"
                     android:scaleType="fitCenter"
-                    android:contentDescription="AxF"/>
+                    android:contentDescription="AxF"
+                    tools:ignore="MissingConstraints"/>
 
                 <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
 
@@ -270,8 +272,6 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:elevation="8dp"
-        app:layout_anchor="@android:id/content"
-        app:layout_anchorGravity="bottom"
         android:layout_gravity="bottom">
 
         <!-- Inicio -->
