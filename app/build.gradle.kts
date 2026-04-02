@@ -4,11 +4,8 @@ plugins {
 
 android {
     namespace = "com.axf.gymnet"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
+
 
     defaultConfig {
         applicationId = "com.axf.gymnet"

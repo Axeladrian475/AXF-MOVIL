@@ -1,8 +1,12 @@
+package com.axf.gymnet.viewmodel
+
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.axf.gymnet.data.LoginRequest
+import com.axf.gymnet.data.LoginResponse
+import com.axf.gymnet.network.RetrofitClient
 import kotlinx.coroutines.launch
-
 class LoginViewModel : ViewModel() {
 
     val loginResult = MutableLiveData<LoginResponse?>()

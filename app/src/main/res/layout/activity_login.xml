@@ -1,73 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp"
     android:background="#1A1A2E">
 
-    <!-- Logo / Título -->
-    <TextView
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AxF GymNet"
+            android:textSize="32sp"
+            android:textColor="#E94560"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inicia sesión para continuar"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp"
+            android:layout_marginBottom="40dp"/>
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Correo electrónico"
+            android:inputType="textEmailAddress"
+            android:background="@drawable/bg_input"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:paddingStart="16dp"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Contraseña"
+            android:inputType="textPassword"
+            android:background="@drawable/bg_input"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:paddingStart="16dp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Iniciar Sesión"
+            android:backgroundTint="#E94560"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF6B6B"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="AxF GymNet"
-        android:textSize="32sp"
-        android:textColor="#E94560"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Inicia sesión para continuar"
-        android:textColor="#AAAAAA"
-        android:textSize="14sp"
-        android:layout_marginBottom="40dp"/>
-
-    <!-- Campo correo -->
-    <EditText
-        android:id="@+id/etEmail"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:hint="Correo electrónico"
-        android:inputType="textEmailAddress"
-        android:background="@drawable/bg_input"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:paddingStart="16dp"
-        android:layout_marginBottom="16dp"/>
-
-    <!-- Campo contraseña -->
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:hint="Contraseña"
-        android:inputType="textPassword"
-        android:background="@drawable/bg_input"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:paddingStart="16dp"
-        android:layout_marginBottom="24dp"/>
-
-    <!-- Botón login -->
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Iniciar Sesión"
-        android:backgroundTint="#E94560"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"/>
-
-    <!-- Mensaje de error -->
-    <TextView
-        android:id="@+id/tvError"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#FF6B6B"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"/>
-
-</LinearLayout>
+</FrameLayout>
