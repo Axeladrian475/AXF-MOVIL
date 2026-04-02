@@ -37,6 +37,7 @@ class LoginActivity : AppCompatActivity() {
                         .putString("userName", it.suscriptor.nombres)
                         .putString("token", it.token)
                         .putBoolean("suscripcionActiva", it.suscriptor.suscripcionActiva)
+                        .putString("fechaVencimiento", it.suscriptor.fechaVencimiento ?: "")
                         .apply()
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()

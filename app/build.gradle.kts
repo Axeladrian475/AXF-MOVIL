@@ -58,4 +58,7 @@ dependencies {
 
 // Activity KTX (para viewModels())
     implementation("androidx.activity:activity-ktx:1.9.0")
+
+    // Gráficas
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
