@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#1C1C1E"
+    android:padding="28dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Descanso"
+        android:textColor="#AAAAAA"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Cuenta atrás grande -->
+    <TextView
+        android:id="@+id/tvCuentaAtras"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2:00"
+        android:textColor="#FFFFFF"
+        android:textSize="64sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Barra de progreso circular (lineal aquí) -->
+    <ProgressBar
+        android:id="@+id/progressDescanso"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:progressTint="#007AFF"
+        android:progressBackgroundTint="#333333"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Botón saltar -->
+    <Button
+        android:id="@+id/btnSaltarDescanso"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:text="Saltar"
+        android:backgroundTint="#2C2C2E"
+        android:textColor="#AAAAAA"
+        android:textSize="15sp"
+        android:stateListAnimator="@null"/>
+
+</LinearLayout>

@@ -4,4 +4,11 @@
         <item name="colorPrimary">#F26A21</item>
     </style>
     <style name="Theme.AxFGymNet" parent="Base.Theme.AxFGymNet" />
+    <style name="DialogDescanso" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+    </style>
 </resources>

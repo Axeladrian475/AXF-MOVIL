@@ -28,6 +28,17 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <!-- ✅ NUEVAS ACTIVITIES -->
+        <activity
+            android:name=".RutinasActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EntrenamientoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

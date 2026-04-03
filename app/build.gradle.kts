@@ -6,14 +6,12 @@ android {
     namespace = "com.axf.gymnet"
     compileSdk = 36
 
-
     defaultConfig {
         applicationId = "com.axf.gymnet"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,7 +41,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.annotation)
 
-    // CardView y CoordinatorLayout (necesarios para el dashboard)
+    // CardView y CoordinatorLayout
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
 
@@ -64,6 +62,9 @@ dependencies {
 
     // Gráficas
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // ✅ NUEVO: Gson para serializar/deserializar la rutina entre Activities
+    implementation("com.google.code.gson:gson:2.10.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
