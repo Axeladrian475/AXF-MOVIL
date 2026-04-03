@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.axf.gymnet.network.RetrofitClient
@@ -15,6 +14,8 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,19 +25,18 @@ class MainActivity : AppCompatActivity() {
 
         // Recuperar sesión
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
-        val userId = prefs.getInt("userId", -1)
         val token = prefs.getString("token", "") ?: ""
         val suscripcionActiva = prefs.getBoolean("suscripcionActiva", false)
 
         // Referencias UI
-        val tvDias = findViewById<TextView>(R.id.tvDiasRestantes)
-        val tvEstado = findViewById<TextView>(R.id.tvEstadoSuscripcion)
+        val tvDias      = findViewById<TextView>(R.id.tvDiasRestantes)
+        val tvEstado    = findViewById<TextView>(R.id.tvEstadoSuscripcion)
         val tvEstadoIcono = findViewById<TextView>(R.id.tvEstadoIcono)
         val tvVencimiento = findViewById<TextView>(R.id.tvVencimiento)
-        val tvPuntos = findViewById<TextView>(R.id.tvPuntos)
-        val tvAforo = findViewById<TextView>(R.id.tvAforo)
-        val btnAforo = findViewById<Button>(R.id.btnActualizarAforo)
-        val barChart = findViewById<BarChart>(R.id.barChart)
+        val tvPuntos    = findViewById<TextView>(R.id.tvPuntos)
+        val tvAforo     = findViewById<TextView>(R.id.tvAforo)
+        val btnAforo    = findViewById<Button>(R.id.btnActualizarAforo)
+        val barChart    = findViewById<BarChart>(R.id.barChart)
 
         // Mostrar estado inicial rápido desde prefs
         if (suscripcionActiva) {
@@ -50,29 +50,37 @@ class MainActivity : AppCompatActivity() {
             tvVencimiento.text = "Sin suscripción activa"
         }
 
-        // Cargar datos reales de suscripción desde el backend
-        if (userId != -1 && token.isNotEmpty()) {
+        // ✅ CORREGIDO: El endpoint móvil no requiere id en la URL.
+        // Usa el token para identificar al suscriptor en el backend.
+        if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
-                    val resp = RetrofitClient.instance.getSuscripcion("Bearer $token", userId)
+                    val resp = RetrofitClient.instance.getSuscripcion("Bearer $token")
                     if (resp.isSuccessful) {
                         val data = resp.body()!!
                         if (data.activa && data.vencimiento_final != null) {
-                            // Calcular días restantes
-                            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                            val hoy = java.util.Date()
-                            val vence = sdf.parse(data.vencimiento_final)
-                            val diff = vence!!.time - hoy.time
-                            val dias = (diff / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+                            // ✅ CORREGIDO: Parseo de fecha robusto.
+                            // El backend puede devolver "2025-12-31" o "2025-12-31T06:00:00.000Z".
+                            // Se normaliza tomando solo los primeros 10 caracteres (yyyy-MM-dd).
+                            val fechaStr = data.vencimiento_final.take(10)
+                            val sdf  = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val hoy  = Date()
+                            val vence = sdf.parse(fechaStr)
 
-                            tvDias.text = "$dias Días"
-                            tvVencimiento.text = "Vence: ${data.vencimiento_final}"
+                            if (vence != null) {
+                                val diff = vence.time - hoy.time
+                                val dias = (diff / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+                                tvDias.text = "$dias Días"
+                                tvVencimiento.text = "Vence: $fechaStr"
+                            } else {
+                                tvDias.text = "-- Días"
+                                tvVencimiento.text = "Vence: ${data.vencimiento_final}"
+                            }
+
                             tvEstado.text = "ACTIVA"
                             tvEstado.setTextColor(getColor(android.R.color.holo_green_light))
                             tvEstadoIcono.text = "✅"
 
-                            // Puntos (los guardamos en prefs durante login si los añades)
-                            // Por ahora placeholder
                         } else {
                             tvEstado.text = "INACTIVA"
                             tvEstado.setTextColor(getColor(android.R.color.holo_red_light))
@@ -95,7 +103,6 @@ class MainActivity : AppCompatActivity() {
             btnAforo.isEnabled = false
             tvAforo.visibility = View.VISIBLE
             tvAforo.text = "Cargando aforo..."
-            // TODO: llamar endpoint real cuando esté disponible
             android.os.Handler(mainLooper).postDelayed({
                 tvAforo.text = "Aforo actual: próximamente disponible"
                 btnAforo.isEnabled = true
@@ -104,8 +111,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBarChart(chart: BarChart) {
-        // Datos placeholder — horas pico típicas de un gym
-        val horas = listOf("6am","9am","12pm","6pm","8pm","10pm")
+        val horas   = listOf("6am", "9am", "12pm", "6pm", "8pm", "10pm")
         val valores = listOf(40f, 25f, 30f, 55f, 80f, 20f)
 
         val entries = valores.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
