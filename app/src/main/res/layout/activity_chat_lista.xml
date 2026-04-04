@@ -35,7 +35,17 @@
             android:textSize="18sp"
             android:textStyle="bold"/>
     </LinearLayout>
-
+    <TextView
+        android:id="@+id/tvSubtituloChat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tus conversaciones"
+        android:textColor="#555555"
+        android:textSize="13sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp"/>
     <!-- LISTA DE CONVERSACIONES -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvConversaciones"

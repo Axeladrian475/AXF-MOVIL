@@ -2,6 +2,8 @@ package com.axf.gymnet
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -19,8 +21,9 @@ class ChatListaActivity : AppCompatActivity() {
         val token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
             .getString("token", "") ?: ""
 
-        findViewById<android.view.View>(R.id.btnVolverChat).setOnClickListener { finish() }
+        findViewById<View>(R.id.btnVolverChat).setOnClickListener { finish() }
 
+        val tvSubtitulo = findViewById<TextView?>(R.id.tvSubtituloChat)
         val rv = findViewById<RecyclerView>(R.id.rvConversaciones)
         rv.layoutManager = LinearLayoutManager(this)
 
@@ -29,11 +32,11 @@ class ChatListaActivity : AppCompatActivity() {
                 val resp = RetrofitClient.instance.getConversaciones("Bearer $token")
                 if (resp.isSuccessful) {
                     val lista = resp.body() ?: emptyList()
-                    if (lista.isEmpty()) {
-                        Toast.makeText(this@ChatListaActivity,
-                            "No tienes conversaciones aún", Toast.LENGTH_SHORT).show()
-                        return@launch
-                    }
+
+                    // Mostrar subtítulo según si hay chats o solo personal disponible
+                    tvSubtitulo?.text = if (lista.any { it.ultimo_mensaje != null })
+                        "Tus conversaciones" else "Tu entrenador / nutriólogo"
+
                     rv.adapter = ChatConversacionesAdapter(lista) { conv ->
                         val intent = Intent(this@ChatListaActivity, ChatActivity::class.java)
                         intent.putExtra("id_personal", conv.id_personal)
@@ -41,12 +44,19 @@ class ChatListaActivity : AppCompatActivity() {
                         startActivity(intent)
                     }
                 } else {
-                    Toast.makeText(this@ChatListaActivity,
-                        "Error al cargar conversaciones", Toast.LENGTH_SHORT).show()
+                    val code = resp.code()
+                    Toast.makeText(
+                        this@ChatListaActivity,
+                        "Error $code al cargar. Revisa tu sesión.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ChatListaActivity,
-                    "Sin conexión: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@ChatListaActivity,
+                    "Sin conexión: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
