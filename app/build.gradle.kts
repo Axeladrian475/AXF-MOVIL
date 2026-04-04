@@ -66,6 +66,13 @@ dependencies {
     // ✅ NUEVO: Gson para serializar/deserializar la rutina entre Activities
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // Socket.io para chat en tiempo real
+    implementation("io.socket:socket.io-client:2.1.0")
+// OkHttp (necesario para socket.io)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

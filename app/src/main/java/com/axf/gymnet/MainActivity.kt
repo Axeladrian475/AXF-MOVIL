@@ -53,6 +53,11 @@ class MainActivity : AppCompatActivity() {
             android.widget.Toast.makeText(this, "Próximamente: Reportar", android.widget.Toast.LENGTH_SHORT).show()
         }
 
+        val navChat = findViewById<View>(R.id.navChat)
+        navChat.setOnClickListener {
+            startActivity(Intent(this, ChatListaActivity::class.java))
+        }
+
         // ── Estado inicial desde prefs ───────────────────────────────────────
         if (suscripcionActiva) {
             tvEstado.text = "ACTIVA"
