@@ -79,6 +79,8 @@
             android:background="@drawable/bg_input"
             android:padding="10dp"
             android:textSize="14sp"
+            android:textColor="#071B2F"
+            android:textColorHint="#999999"
             android:maxLines="4"
             android:inputType="textMultiLine|textCapSentences"/>
 
