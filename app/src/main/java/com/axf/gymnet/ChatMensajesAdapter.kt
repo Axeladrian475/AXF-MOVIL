@@ -96,8 +96,15 @@ class ChatMensajesAdapter(
 
     override fun getItemCount() = mensajes.size
 
+    // ── CORRECCIÓN: limpiar toda la lista (usar antes de recargar desde BD) ─
+    fun limpiar() {
+        val size = mensajes.size
+        mensajes.clear()
+        notifyItemRangeRemoved(0, size)
+    }
+
     fun agregar(msg: ChatMensaje) {
-        // Evitar duplicados
+        // Evitar duplicados por id_mensaje
         if (mensajes.none { it.id_mensaje == msg.id_mensaje }) {
             mensajes.add(msg)
             notifyItemInserted(mensajes.size - 1)
@@ -106,6 +113,7 @@ class ChatMensajesAdapter(
 
     fun prepend(msgs: List<ChatMensaje>) {
         val nuevos = msgs.filter { n -> mensajes.none { it.id_mensaje == n.id_mensaje } }
+        if (nuevos.isEmpty()) return
         mensajes.addAll(0, nuevos)
         notifyItemRangeInserted(0, nuevos.size)
     }
@@ -113,7 +121,10 @@ class ChatMensajesAdapter(
     fun actualizarMensaje(idMensaje: Int, nuevoContenido: String, editadoEn: String) {
         val idx = mensajes.indexOfFirst { it.id_mensaje == idMensaje }
         if (idx >= 0) {
-            mensajes[idx] = mensajes[idx].copy(contenido = nuevoContenido, editado_en = editadoEn)
+            mensajes[idx] = mensajes[idx].copy(
+                contenido  = nuevoContenido,
+                editado_en = editadoEn.takeIf { it.isNotBlank() }
+            )
             notifyItemChanged(idx)
         }
     }
@@ -146,6 +157,16 @@ class ChatMensajesAdapter(
             }
         }
         if (changed) notifyDataSetChanged()
+    }
+
+    // CORRECCIÓN: marcar un solo mensaje como entregado por su id
+    // (antes se usaba notifyDataSetChanged() completo, innecesariamente costoso)
+    fun marcarEntregadoUno(idMensaje: Int) {
+        val idx = mensajes.indexOfFirst { it.id_mensaje == idMensaje }
+        if (idx >= 0 && mensajes[idx].entregado == 0) {
+            mensajes[idx] = mensajes[idx].copy(entregado = 1)
+            notifyItemChanged(idx)
+        }
     }
 
     private fun formatHora(iso: String): String {

@@ -102,10 +102,14 @@ class ChatActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val sk = socket ?: return
                 if (!sk.connected()) return
-                sk.emit("chat:escribiendo", JSONObject().put("id_personal", idPersonal))
+                // CORRECCIÓN: incluir id_personal e id_suscriptor para que
+                // el receptor pueda filtrar por conversación activa.
+                sk.emit("chat:escribiendo", JSONObject()
+                    .put("id_personal", idPersonal))
                 escribiendoRunnable?.let { handler.removeCallbacks(it) }
                 escribiendoRunnable = Runnable {
-                    sk.emit("chat:parar_escribir", JSONObject().put("id_personal", idPersonal))
+                    sk.emit("chat:parar_escribir", JSONObject()
+                        .put("id_personal", idPersonal))
                 }.also { handler.postDelayed(it, 2000) }
             }
             override fun afterTextChanged(s: android.text.Editable?) {}

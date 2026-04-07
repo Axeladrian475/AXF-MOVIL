@@ -39,15 +39,15 @@ interface ApiService {
     ): Response<Unit>
 
     // ── CHAT ──────────────────────────────────────────────────────────────────
+    // CORRECCIÓN: se agrega el prefijo "api/" que faltaba en las 3 rutas de chat.
+    // Sin él, la app llamaba a /chat/... en vez de /api/chat/... → error 404.
 
-    // Reemplaza los métodos del chat en ApiService.kt:
-
-    @GET("chat/conversaciones")
+    @GET("api/chat/conversaciones")
     suspend fun getConversaciones(
         @Header("Authorization") token: String
     ): Response<List<ChatConversacion>>
 
-    @GET("chat/mensajes/personal/{id_personal}")
+    @GET("api/chat/mensajes/personal/{id_personal}")
     suspend fun getMensajes(
         @Header("Authorization") token: String,
         @Path("id_personal")     idPersonal: Int,
@@ -55,7 +55,7 @@ interface ApiService {
         @Query("offset")         offset: Int = 0
     ): Response<MensajesResponse>
 
-    @POST("chat/mensajes")
+    @POST("api/chat/mensajes")
     suspend fun enviarMensaje(
         @Header("Authorization") token: String,
         @Body request: EnviarMensajeRequest
