@@ -15,6 +15,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -39,18 +40,22 @@ interface ApiService {
 
     // ── CHAT ──────────────────────────────────────────────────────────────────
 
-    @GET("api/chat/conversaciones")
+    // Reemplaza los métodos del chat en ApiService.kt:
+
+    @GET("chat/conversaciones")
     suspend fun getConversaciones(
         @Header("Authorization") token: String
     ): Response<List<ChatConversacion>>
 
-    @GET("api/chat/mensajes/personal/{id_personal}")
+    @GET("chat/mensajes/personal/{id_personal}")
     suspend fun getMensajes(
         @Header("Authorization") token: String,
-        @Path("id_personal") idPersonal: Int
+        @Path("id_personal")     idPersonal: Int,
+        @Query("limite")         limite: Int = 50,
+        @Query("offset")         offset: Int = 0
     ): Response<MensajesResponse>
 
-    @POST("api/chat/mensajes")
+    @POST("chat/mensajes")
     suspend fun enviarMensaje(
         @Header("Authorization") token: String,
         @Body request: EnviarMensajeRequest
