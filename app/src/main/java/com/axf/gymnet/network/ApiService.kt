@@ -3,6 +3,7 @@ package com.axf.gymnet.network
 import com.axf.gymnet.data.ChatConversacion
 import com.axf.gymnet.data.ChatMensaje
 import com.axf.gymnet.data.EnviarMensajeRequest
+import com.axf.gymnet.data.FcmTokenRequest
 import com.axf.gymnet.data.GuardarSerieRequest
 import com.axf.gymnet.data.LoginRequest
 import com.axf.gymnet.data.LoginResponse
@@ -39,9 +40,6 @@ interface ApiService {
     ): Response<Unit>
 
     // ── CHAT ──────────────────────────────────────────────────────────────────
-    // CORRECCIÓN: se agrega el prefijo "api/" que faltaba en las 3 rutas de chat.
-    // Sin él, la app llamaba a /chat/... en vez de /api/chat/... → error 404.
-
     @GET("api/chat/conversaciones")
     suspend fun getConversaciones(
         @Header("Authorization") token: String
@@ -65,5 +63,12 @@ interface ApiService {
     suspend fun marcarComoLeido(
         @Header("Authorization") token: String,
         @Path("id_personal") idPersonal: Int
+    ): Response<Unit>
+
+    // ── FCM ───────────────────────────────────────────────────────────────────
+    @POST("api/chat/fcm-token")
+    suspend fun registrarFcmToken(
+        @Header("Authorization") token: String,
+        @Body request: FcmTokenRequest
     ): Response<Unit>
 }

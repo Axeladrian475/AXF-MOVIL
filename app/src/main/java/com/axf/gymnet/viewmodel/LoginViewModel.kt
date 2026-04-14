@@ -8,7 +8,7 @@ import com.axf.gymnet.data.LoginResponse
 import com.axf.gymnet.network.RetrofitClient
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class   LoginViewModel : ViewModel() {
 
     val loginResult = MutableLiveData<LoginResponse?>()
     val isLoading = MutableLiveData<Boolean>()
