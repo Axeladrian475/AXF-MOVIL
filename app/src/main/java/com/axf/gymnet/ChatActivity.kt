@@ -86,6 +86,7 @@ class ChatActivity : AppCompatActivity() {
 
         cargarMensajes()
         conectarSocket()
+        marcarComoLeidoAPI() // Limpiar badge al entrar
 
         findViewById<View>(R.id.btnEnviar).setOnClickListener {
             val texto = etMensaje.text.toString().trim()
@@ -102,18 +103,24 @@ class ChatActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val sk = socket ?: return
                 if (!sk.connected()) return
-                // CORRECCIÓN: incluir id_personal e id_suscriptor para que
-                // el receptor pueda filtrar por conversación activa.
-                sk.emit("chat:escribiendo", JSONObject()
-                    .put("id_personal", idPersonal))
+                sk.emit("chat:escribiendo", JSONObject().put("id_personal", idPersonal))
                 escribiendoRunnable?.let { handler.removeCallbacks(it) }
                 escribiendoRunnable = Runnable {
-                    sk.emit("chat:parar_escribir", JSONObject()
-                        .put("id_personal", idPersonal))
+                    sk.emit("chat:parar_escribir", JSONObject().put("id_personal", idPersonal))
                 }.also { handler.postDelayed(it, 2000) }
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+    }
+
+    private fun marcarComoLeidoAPI() {
+        lifecycleScope.launch {
+            try {
+                RetrofitClient.instance.marcarComoLeido("Bearer $token", idPersonal)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun cargarMensajes() {
@@ -128,7 +135,7 @@ class ChatActivity : AppCompatActivity() {
                     offset = body.mensajes.size
                     if (adapter.itemCount > 0)
                         rv.scrollToPosition(adapter.itemCount - 1)
-                    // Marcar como leídos
+                    
                     socket?.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
                 }
             } catch (e: Exception) {
@@ -159,7 +166,7 @@ class ChatActivity : AppCompatActivity() {
     private fun conectarSocket() {
         try {
             val sk = IO.socket(
-                "http://10.0.2.2:3001",  // ← cambia a tu IP de producción o usa BuildConfig
+                "http://10.0.2.2:3001",
                 IO.Options.builder().setAuth(mapOf("token" to token))
                     .setReconnection(true).setReconnectionAttempts(Int.MAX_VALUE)
                     .setReconnectionDelay(2000).build()
@@ -168,15 +175,10 @@ class ChatActivity : AppCompatActivity() {
 
             sk.on(Socket.EVENT_CONNECT) {
                 runOnUiThread {
-                    // Al conectar, marcar mensajes pendientes como entregados
                     sk.emit("chat:marcar_entregado", JSONObject())
                     sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
                     adapter.marcarEntregados()
                 }
-            }
-
-            sk.on(Socket.EVENT_CONNECT_ERROR) { args ->
-                android.util.Log.w("ChatSocket", "Error: ${args.getOrNull(0)}")
             }
 
             sk.on("chat:mensaje_nuevo") { args ->
@@ -187,21 +189,12 @@ class ChatActivity : AppCompatActivity() {
                     adapter.agregar(msg)
                     rv.scrollToPosition(adapter.itemCount - 1)
                     sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
+                    marcarComoLeidoAPI()
                 }
             }
 
             sk.on("chat:mensajes_leidos") {
                 runOnUiThread { adapter.marcarLeidos(idPersonal) }
-            }
-
-            sk.on("chat:entregado") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
-                val idMsg = data.optInt("id_mensaje")
-                runOnUiThread {
-                    // Actualizar ese mensaje específico como entregado
-                    // (usa notifyDataSetChanged o un método del adapter)
-                    adapter.notifyDataSetChanged()
-                }
             }
 
             sk.on("chat:entregado_bulk") {
@@ -222,10 +215,14 @@ class ChatActivity : AppCompatActivity() {
                 runOnUiThread { adapter.eliminarMensaje(idMsg) }
             }
 
-            sk.on("chat:escribiendo") {
+            sk.on("chat:escribiendo") { args ->
+                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                if (data.optInt("id_personal") != idPersonal) return@on
                 runOnUiThread { tvEscribiendo.visibility = View.VISIBLE }
             }
-            sk.on("chat:parar_escribir") {
+            sk.on("chat:parar_escribir") { args ->
+                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                if (data.optInt("id_personal") != idPersonal) return@on
                 runOnUiThread { tvEscribiendo.visibility = View.GONE }
             }
 
@@ -280,123 +277,92 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun enviarEdicion(nuevoTexto: String) {
-        val msg = editandoMsg ?: return
-        editandoMsg = null
-        etMensaje.setText("")
-        etMensaje.hint = "Escribe un mensaje..."
+    private fun cancelarReply() {
+        replyMsg = null
         llReply.visibility = View.GONE
+    }
 
-        val sk = socket
-        if (sk != null && sk.connected()) {
-            val data = JSONObject()
-                .put("id_mensaje", msg.id_mensaje)
-                .put("nuevo_contenido", nuevoTexto)
-            sk.emit("chat:editar", data, Ack { args ->
-                val resp = args.getOrNull(0) as? JSONObject ?: return@Ack
-                if (resp.optBoolean("ok")) {
-                    runOnUiThread {
-                        adapter.actualizarMensaje(msg.id_mensaje, nuevoTexto, "")
-                    }
-                }
-            })
-        }
+    private fun parseMensaje(obj: JSONObject): ChatMensaje {
+        return ChatMensaje(
+            id_mensaje = obj.optInt("id_mensaje"),
+            enviado_por = obj.optString("enviado_por"),
+            contenido = obj.optString("contenido"),
+            leido = if (obj.optBoolean("leido")) 1 else 0,
+            entregado = if (obj.optBoolean("entregado")) 1 else 0,
+            id_respuesta = if (obj.isNull("id_respuesta")) null else obj.optInt("id_respuesta"),
+            respuesta_contenido = obj.optString("respuesta_contenido"),
+            respuesta_enviado_por = obj.optString("respuesta_enviado_por"),
+            editado_en = if (obj.isNull("editado_en")) null else obj.optString("editado_en"),
+            enviado_en = obj.optString("enviado_en", obj.optString("fecha_envio")),
+            borrado_para = obj.optString("borrado_para", "nadie")
+        )
     }
 
     private fun mostrarMenuMensaje(msg: ChatMensaje) {
-        if (msg.borrado_para == "todos") return
-        val esMio = msg.enviado_por == "suscriptor"
-        val opciones = buildList {
-            add("↩️ Responder")
-            add("📋 Copiar texto")
-            if (esMio) add("✏️ Editar")
-            add("🗑️ Eliminar para mí")
-            if (esMio) add("🚫 Eliminar para todos")
-        }.toTypedArray()
+        val options = if (msg.enviado_por == "suscriptor") {
+            arrayOf("Copiar", "Responder", "Editar", "Eliminar")
+        } else {
+            arrayOf("Copiar", "Responder")
+        }
 
         AlertDialog.Builder(this)
-            .setItems(opciones) { _, idx ->
-                when (opciones[idx]) {
-                    "↩️ Responder"          -> iniciarReply(msg)
-                    "📋 Copiar texto"       -> copiarTexto(msg.contenido)
-                    "✏️ Editar"             -> iniciarEdicion(msg)
-                    "🗑️ Eliminar para mí"  -> eliminarMensaje(msg, false)
-                    "🚫 Eliminar para todos"-> eliminarMensaje(msg, true)
+            .setItems(options) { _, which ->
+                when (options[which]) {
+                    "Copiar" -> {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Mensaje", msg.contenido))
+                    }
+                    "Responder" -> prepararReply(msg)
+                    "Editar" -> prepararEdicion(msg)
+                    "Eliminar" -> confirmarEliminacion(msg)
                 }
             }.show()
     }
 
-    private fun iniciarReply(msg: ChatMensaje) {
+    private fun prepararReply(msg: ChatMensaje) {
         replyMsg = msg
-        editandoMsg = null
-        llReply.visibility = View.VISIBLE
         tvReplyDe.text = if (msg.enviado_por == "suscriptor") "Tú" else tvNombre.text
         tvReplyContenido.text = msg.contenido
-        etMensaje.requestFocus()
-    }
-
-    private fun iniciarEdicion(msg: ChatMensaje) {
-        editandoMsg = msg
-        replyMsg = null
-        etMensaje.setText(msg.contenido)
-        etMensaje.setSelection(msg.contenido.length)
         llReply.visibility = View.VISIBLE
-        tvReplyDe.text = "✏️ Editando mensaje"
-        tvReplyContenido.text = msg.contenido
         etMensaje.requestFocus()
     }
 
-    private fun cancelarReply() {
-        replyMsg = null
-        editandoMsg = null
-        llReply.visibility = View.GONE
-        etMensaje.hint = "Escribe un mensaje..."
+    private fun prepararEdicion(msg: ChatMensaje) {
+        editandoMsg = msg
+        etMensaje.setText(msg.contenido)
+        etMensaje.requestFocus()
+        etMensaje.setSelection(etMensaje.text.length)
     }
 
-    private fun eliminarMensaje(msg: ChatMensaje, paraTodos: Boolean) {
-        val sk = socket ?: return
-        val data = JSONObject()
+    private fun confirmarEliminacion(msg: ChatMensaje) {
+        AlertDialog.Builder(this)
+            .setTitle("Eliminar mensaje")
+            .setMessage("¿Estás seguro?")
+            .setPositiveButton("Eliminar") { _, _ -> enviarEliminacion(msg) }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun enviarEdicion(texto: String) {
+        val msg = editandoMsg ?: return
+        socket?.emit("chat:editar", JSONObject()
             .put("id_mensaje", msg.id_mensaje)
-            .put("para_todos", paraTodos)
-        sk.emit("chat:eliminar", data, Ack { args ->
-            val resp = args.getOrNull(0) as? JSONObject ?: return@Ack
-            if (resp.optBoolean("ok")) {
-                runOnUiThread {
-                    if (paraTodos) {
-                        adapter.eliminarMensaje(msg.id_mensaje)
-                    } else {
-                        // Para mí: quitar de la lista local (no en la BD)
-                        // Aquí puedes usar un método removeLocal en el adapter
-                        adapter.eliminarMensaje(msg.id_mensaje)
-                    }
-                }
-            }
-        })
+            .put("nuevo_contenido", texto))
+        editandoMsg = null
+        etMensaje.setText("")
     }
 
-    private fun copiarTexto(texto: String) {
-        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText("mensaje", texto))
-        Toast.makeText(this, "Copiado al portapapeles", Toast.LENGTH_SHORT).show()
+    private fun enviarEliminacion(msg: ChatMensaje) {
+        socket?.emit("chat:eliminar", JSONObject().put("id_mensaje", msg.id_mensaje))
     }
 
-    private fun parseMensaje(obj: JSONObject) = ChatMensaje(
-        id_mensaje            = obj.optInt("id_mensaje"),
-        enviado_por           = obj.optString("enviado_por"),
-        contenido             = obj.optString("contenido"),
-        leido                 = obj.optInt("leido"),
-        entregado             = obj.optInt("entregado"),
-        editado_en            = obj.optString("editado_en").takeIf { it.isNotBlank() && it != "null" },
-        borrado_para          = obj.optString("borrado_para", "nadie"),
-        id_respuesta          = obj.optInt("id_respuesta").takeIf { it != 0 },
-        respuesta_contenido   = obj.optString("respuesta_contenido").takeIf { it.isNotBlank() && it != "null" },
-        respuesta_enviado_por = obj.optString("respuesta_enviado_por").takeIf { it.isNotBlank() && it != "null" },
-        enviado_en            = obj.optString("enviado_en")
-    )
+    override fun onPause() {
+        super.onPause()
+        marcarComoLeidoAPI()
+    }
 
     override fun onDestroy() {
         super.onDestroy()
         socket?.disconnect()
-        socket = null
     }
 }

@@ -60,4 +60,10 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: EnviarMensajeRequest
     ): Response<Any>
+
+    @POST("api/chat/leer/personal/{id_personal}")
+    suspend fun marcarComoLeido(
+        @Header("Authorization") token: String,
+        @Path("id_personal") idPersonal: Int
+    ): Response<Unit>
 }

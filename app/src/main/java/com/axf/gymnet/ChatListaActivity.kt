@@ -14,19 +14,30 @@ import kotlinx.coroutines.launch
 
 class ChatListaActivity : AppCompatActivity() {
 
+    private lateinit var rv: RecyclerView
+    private var tvSubtitulo: TextView? = null
+    private var token = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_lista)
 
-        val token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
             .getString("token", "") ?: ""
 
         findViewById<View>(R.id.btnVolverChat).setOnClickListener { finish() }
 
-        val tvSubtitulo = findViewById<TextView?>(R.id.tvSubtituloChat)
-        val rv = findViewById<RecyclerView>(R.id.rvConversaciones)
+        tvSubtitulo = findViewById<TextView?>(R.id.tvSubtituloChat)
+        rv = findViewById(R.id.rvConversaciones)
         rv.layoutManager = LinearLayoutManager(this)
+    }
 
+    override fun onResume() {
+        super.onResume()
+        cargarConversaciones()
+    }
+
+    private fun cargarConversaciones() {
         lifecycleScope.launch {
             try {
                 val resp = RetrofitClient.instance.getConversaciones("Bearer $token")
