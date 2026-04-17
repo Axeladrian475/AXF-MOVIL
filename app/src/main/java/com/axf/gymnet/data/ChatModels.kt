@@ -48,3 +48,7 @@ data class Paginacion(
     val offset:  Int,
     val hay_mas: Boolean
 )
+
+data class NoLeidosResponse(
+    val no_leidos: Int
+)

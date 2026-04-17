@@ -8,6 +8,7 @@ import com.axf.gymnet.data.GuardarSerieRequest
 import com.axf.gymnet.data.LoginRequest
 import com.axf.gymnet.data.LoginResponse
 import com.axf.gymnet.data.MensajesResponse
+import com.axf.gymnet.data.NoLeidosResponse
 import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.data.SuscripcionResponse
 import retrofit2.Response
@@ -64,6 +65,11 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id_personal") idPersonal: Int
     ): Response<Unit>
+
+    @GET("api/chat/no-leidos")
+    suspend fun getNoLeidos(
+        @Header("Authorization") token: String
+    ): Response<NoLeidosResponse>
 
     // ── FCM ───────────────────────────────────────────────────────────────────
     @POST("api/chat/fcm-token")

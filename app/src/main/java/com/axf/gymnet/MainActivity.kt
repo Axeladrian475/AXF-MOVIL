@@ -20,12 +20,15 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var tvChatBadge: TextView
+    private var token: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
-        val token = prefs.getString("token", "") ?: ""
+        token = prefs.getString("token", "") ?: ""
         val suscripcionActiva = prefs.getBoolean("suscripcionActiva", false)
 
         // Referencias UI
@@ -36,11 +39,13 @@ class MainActivity : AppCompatActivity() {
         val tvAforo       = findViewById<TextView>(R.id.tvAforo)
         val btnAforo      = findViewById<Button>(R.id.btnActualizarAforo)
         val barChart      = findViewById<BarChart>(R.id.barChart)
+        tvChatBadge       = findViewById(R.id.tvChatBadge)
 
         // ── Nav bar ──────────────────────────────────────────────────────────
         val navEntreno  = findViewById<View>(R.id.navEntreno)
         val navDieta    = findViewById<View>(R.id.navDieta)
         val navReportar = findViewById<View>(R.id.navReportar)
+        val navChat     = findViewById<View>(R.id.navChat)
 
         // ✅ Botón Entreno → abre lista de rutinas
         navEntreno.setOnClickListener {
@@ -53,8 +58,8 @@ class MainActivity : AppCompatActivity() {
             android.widget.Toast.makeText(this, "Próximamente: Reportar", android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        val navChat = findViewById<View>(R.id.navChat)
         navChat.setOnClickListener {
+            tvChatBadge.visibility = View.GONE
             startActivity(Intent(this, ChatListaActivity::class.java))
         }
 
@@ -111,6 +116,32 @@ class MainActivity : AppCompatActivity() {
                 tvAforo.text = "Aforo actual: próximamente disponible"
                 btnAforo.isEnabled = true
             }, 1000)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (token.isNotEmpty()) {
+            lifecycleScope.launch {
+                try {
+                    val resp = RetrofitClient.instance.getNoLeidos("Bearer $token")
+                    if (resp.isSuccessful) {
+                        val count = resp.body()?.no_leidos ?: 0
+                        actualizarBadge(count)
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    private fun actualizarBadge(count: Int) {
+        runOnUiThread {
+            if (count > 0) {
+                tvChatBadge.visibility = View.VISIBLE
+                tvChatBadge.text = if (count > 99) "99+" else count.toString()
+            } else {
+                tvChatBadge.visibility = View.GONE
+            }
         }
     }
 

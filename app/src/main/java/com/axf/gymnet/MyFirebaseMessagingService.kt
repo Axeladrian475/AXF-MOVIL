@@ -1,10 +1,12 @@
 package com.axf.gymnet
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -61,20 +63,30 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val manager   = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Crear canal (Android 8+)
-        val channel = NotificationChannel(
-            channelId,
-            "Mensajes del chat",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply { description = "Notificaciones de nuevos mensajes" }
-        manager.createNotificationChannel(channel)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Mensajes del chat",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notificaciones de nuevos mensajes"
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                enableLights(true)
+                enableVibration(true)
+            }
+            manager.createNotificationChannel(channel)
+        }
 
         val notif = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification_small)
             .setContentTitle(titulo)
             .setContentText(cuerpo)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .build()
 
         manager.notify(idPersonal.toInt(), notif)
