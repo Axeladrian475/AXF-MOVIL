@@ -1,15 +1,20 @@
 package com.axf.gymnet
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,22 +51,31 @@ class ChatActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var escribiendoRunnable: Runnable? = null
 
+    // Permiso POST_NOTIFICATIONS (Android 13+)
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* no action needed */ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
+        pedirPermisoNotificaciones()
+
         val prefs  = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         token      = prefs.getString("token", "") ?: ""
+
+        // Soporta tanto intent normal como deep link desde notificación push
         idPersonal = intent.getIntExtra("id_personal", 0)
         val nombre = intent.getStringExtra("nombre_personal") ?: "Chat"
 
-        rv             = findViewById(R.id.rvMensajes)
-        etMensaje      = findViewById(R.id.etMensaje)
-        tvEscribiendo  = findViewById(R.id.tvEscribiendo)
-        tvNombre       = findViewById(R.id.tvNombreChat)
-        llReply        = findViewById(R.id.llReply)
+        rv               = findViewById(R.id.rvMensajes)
+        etMensaje        = findViewById(R.id.etMensaje)
+        tvEscribiendo    = findViewById(R.id.tvEscribiendo)
+        tvNombre         = findViewById(R.id.tvNombreChat)
+        llReply          = findViewById(R.id.llReply)
         tvReplyContenido = findViewById(R.id.tvReplyContenido)
-        tvReplyDe      = findViewById(R.id.tvReplyDe)
+        tvReplyDe        = findViewById(R.id.tvReplyDe)
         btnCancelarReply = findViewById(R.id.btnCancelarReply)
 
         tvNombre.text = nombre
@@ -76,26 +90,21 @@ class ChatActivity : AppCompatActivity() {
         rv.layoutManager = lm
         rv.adapter = adapter
 
-        // Scroll al tope → cargar más antiguos
         rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                if (!lm.findFirstVisibleItemPosition().let { it == 0 } || cargandoAntiguos || !hayMasAntiguos) return
+                if (lm.findFirstVisibleItemPosition() != 0 || cargandoAntiguos || !hayMasAntiguos) return
                 if (dy < 0) cargarAntiguos()
             }
         })
 
         cargarMensajes()
         conectarSocket()
-        marcarComoLeidoAPI() // Limpiar badge al entrar
+        marcarComoLeidoAPI()
 
         findViewById<View>(R.id.btnEnviar).setOnClickListener {
             val texto = etMensaje.text.toString().trim()
             if (texto.isEmpty()) return@setOnClickListener
-            if (editandoMsg != null) {
-                enviarEdicion(texto)
-            } else {
-                enviarMensaje(texto)
-            }
+            if (editandoMsg != null) enviarEdicion(texto) else enviarMensaje(texto)
         }
 
         etMensaje.addTextChangedListener(object : android.text.TextWatcher {
@@ -113,13 +122,20 @@ class ChatActivity : AppCompatActivity() {
         })
     }
 
+    private fun pedirPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     private fun marcarComoLeidoAPI() {
         lifecycleScope.launch {
             try {
                 RetrofitClient.instance.marcarComoLeido("Bearer $token", idPersonal)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -133,12 +149,10 @@ class ChatActivity : AppCompatActivity() {
                     body.mensajes.forEach { adapter.agregar(it) }
                     hayMasAntiguos = body.paginacion.hay_mas
                     offset = body.mensajes.size
-                    if (adapter.itemCount > 0)
-                        rv.scrollToPosition(adapter.itemCount - 1)
-                    
+                    if (adapter.itemCount > 0) rv.scrollToPosition(adapter.itemCount - 1)
                     socket?.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Toast.makeText(this@ChatActivity, "Error al cargar mensajes", Toast.LENGTH_SHORT).show()
             }
         }
@@ -166,10 +180,13 @@ class ChatActivity : AppCompatActivity() {
     private fun conectarSocket() {
         try {
             val sk = IO.socket(
-                "http://10.0.2.2:3001",
-                IO.Options.builder().setAuth(mapOf("token" to token))
-                    .setReconnection(true).setReconnectionAttempts(Int.MAX_VALUE)
-                    .setReconnectionDelay(2000).build()
+                RetrofitClient.BASE_URL.trimEnd('/'),
+                IO.Options.builder()
+                    .setAuth(mapOf("token" to token))
+                    .setReconnection(true)
+                    .setReconnectionAttempts(Int.MAX_VALUE)
+                    .setReconnectionDelay(2000)
+                    .build()
             )
             socket = sk
 
@@ -202,7 +219,7 @@ class ChatActivity : AppCompatActivity() {
             }
 
             sk.on("chat:mensaje_editado") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data  = args.getOrNull(0) as? JSONObject ?: return@on
                 val idMsg = data.optInt("id_mensaje")
                 val nuevo = data.optString("nuevo_contenido")
                 val edEn  = data.optString("editado_en")
@@ -220,6 +237,7 @@ class ChatActivity : AppCompatActivity() {
                 if (data.optInt("id_personal") != idPersonal) return@on
                 runOnUiThread { tvEscribiendo.visibility = View.VISIBLE }
             }
+
             sk.on("chat:parar_escribir") { args ->
                 val data = args.getOrNull(0) as? JSONObject ?: return@on
                 if (data.optInt("id_personal") != idPersonal) return@on
@@ -234,10 +252,9 @@ class ChatActivity : AppCompatActivity() {
 
     private fun enviarMensaje(texto: String) {
         etMensaje.setText("")
-        val sk = socket
+        val sk    = socket
         val reply = replyMsg
-
-        val data = JSONObject()
+        val data  = JSONObject()
             .put("id_personal", idPersonal)
             .put("contenido", texto)
         reply?.let {
@@ -284,39 +301,37 @@ class ChatActivity : AppCompatActivity() {
 
     private fun parseMensaje(obj: JSONObject): ChatMensaje {
         return ChatMensaje(
-            id_mensaje = obj.optInt("id_mensaje"),
-            enviado_por = obj.optString("enviado_por"),
-            contenido = obj.optString("contenido"),
-            leido = if (obj.optBoolean("leido")) 1 else 0,
-            entregado = if (obj.optBoolean("entregado")) 1 else 0,
-            id_respuesta = if (obj.isNull("id_respuesta")) null else obj.optInt("id_respuesta"),
-            respuesta_contenido = obj.optString("respuesta_contenido"),
+            id_mensaje            = obj.optInt("id_mensaje"),
+            enviado_por           = obj.optString("enviado_por"),
+            contenido             = obj.optString("contenido"),
+            leido                 = if (obj.optBoolean("leido")) 1 else 0,
+            entregado             = if (obj.optBoolean("entregado")) 1 else 0,
+            id_respuesta          = if (obj.isNull("id_respuesta")) null else obj.optInt("id_respuesta"),
+            respuesta_contenido   = obj.optString("respuesta_contenido"),
             respuesta_enviado_por = obj.optString("respuesta_enviado_por"),
-            editado_en = if (obj.isNull("editado_en")) null else obj.optString("editado_en"),
-            enviado_en = obj.optString("enviado_en", obj.optString("fecha_envio")),
-            borrado_para = obj.optString("borrado_para", "nadie")
+            editado_en            = if (obj.isNull("editado_en")) null else obj.optString("editado_en"),
+            enviado_en            = obj.optString("enviado_en", obj.optString("fecha_envio")),
+            borrado_para          = obj.optString("borrado_para", "nadie")
         )
     }
 
     private fun mostrarMenuMensaje(msg: ChatMensaje) {
-        val options = if (msg.enviado_por == "suscriptor") {
+        val options = if (msg.enviado_por == "suscriptor")
             arrayOf("Copiar", "Responder", "Editar", "Eliminar")
-        } else {
+        else
             arrayOf("Copiar", "Responder")
-        }
 
-        AlertDialog.Builder(this)
-            .setItems(options) { _, which ->
-                when (options[which]) {
-                    "Copiar" -> {
-                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Mensaje", msg.contenido))
-                    }
-                    "Responder" -> prepararReply(msg)
-                    "Editar" -> prepararEdicion(msg)
-                    "Eliminar" -> confirmarEliminacion(msg)
+        AlertDialog.Builder(this).setItems(options) { _, which ->
+            when (options[which]) {
+                "Copiar" -> {
+                    val cb = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    cb.setPrimaryClip(ClipData.newPlainText("Mensaje", msg.contenido))
                 }
-            }.show()
+                "Responder" -> prepararReply(msg)
+                "Editar"    -> prepararEdicion(msg)
+                "Eliminar"  -> confirmarEliminacion(msg)
+            }
+        }.show()
     }
 
     private fun prepararReply(msg: ChatMensaje) {
@@ -358,6 +373,8 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        escribiendoRunnable?.let { handler.removeCallbacks(it) }
+        socket?.emit("chat:parar_escribir", JSONObject().put("id_personal", idPersonal))
         marcarComoLeidoAPI()
     }
 

@@ -48,7 +48,3 @@ data class Paginacion(
     val offset:  Int,
     val hay_mas: Boolean
 )
-
-data class FcmTokenRequest(
-    val fcm_token: String
-)
