@@ -9,7 +9,10 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.axf.gymnet.data.FcmTokenRequest
+import com.axf.gymnet.network.RetrofitClient
 import com.axf.gymnet.viewmodel.LoginViewModel
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,15 +20,29 @@ import kotlinx.coroutines.launch
 class LoginActivity : AppCompatActivity() {
 
     private val viewModel: LoginViewModel by viewModels()
-    private lateinit var etEmail: EditText
+    private lateinit var etEmail:    EditText
     private lateinit var etPassword: EditText
-    private lateinit var btnLogin: Button
-    private lateinit var tvError: TextView
+    private lateinit var btnLogin:   Button
+    private lateinit var tvError:    TextView
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Si ya hay sesión activa, saltar directo a MainActivity
+        val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        if (!prefs.getString("token", null).isNullOrEmpty()) {
+            // Asegurar que el servicio esté corriendo
+            ChatSocketService.start(this)
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_login)
+
+        // Crear canales de notificación (necesario en Android 8+)
+        MyFirebaseMessagingService.crearCanales(this)
 
         etEmail     = findViewById(R.id.etEmail)
         etPassword  = findViewById(R.id.etPassword)
@@ -34,39 +51,33 @@ class LoginActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         btnLogin.setOnClickListener {
+            tvError.visibility = View.GONE
             viewModel.login(etEmail.text.toString(), etPassword.text.toString())
         }
 
         viewModel.loginResult.observe(this) { response ->
             response?.let {
-                if (it.success && it.suscriptor != null) {
-                    val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+                if (it.success && it.suscriptor != null && it.token != null) {
+                    // Guardar sesión
                     prefs.edit()
-                        .putInt("userId", it.suscriptor.id)
-                        .putString("userName", it.suscriptor.nombres)
-                        .putString("token", it.token)
+                        .putInt("userId",             it.suscriptor.id)
+                        .putString("userName",        it.suscriptor.nombres)
+                        .putString("token",           it.token)
                         .putBoolean("suscripcionActiva", it.suscriptor.suscripcionActiva)
                         .putString("fechaVencimiento", it.suscriptor.fechaVencimiento ?: "")
                         .apply()
 
-                    // Registrar FCM token en backend
-                    com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-                        .addOnSuccessListener { fcmToken ->
-                            prefs.edit().putString("fcm_token", fcmToken).apply()
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    com.axf.gymnet.network.RetrofitClient.instance.registrarFcmToken(
-                                        "Bearer ${it.token}",
-                                        com.axf.gymnet.data.FcmTokenRequest(fcmToken)
-                                    )
-                                } catch (_: Exception) {}
-                            }
-                        }
+                    // Registrar FCM token con el nuevo authToken
+                    registrarFcmToken(it.token)
+
+                    // Iniciar servicio de mensajes en background
+                    ChatSocketService.start(this)
 
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
+
                 } else {
-                    tvError.text = it.message
+                    tvError.text = it.message ?: "Credenciales incorrectas"
                     tvError.visibility = View.VISIBLE
                 }
             }
@@ -83,6 +94,22 @@ class LoginActivity : AppCompatActivity() {
         viewModel.isLoading.observe(this) { loading ->
             progressBar.visibility = if (loading) View.VISIBLE else View.GONE
             btnLogin.isEnabled = !loading
+        }
+    }
+
+    private fun registrarFcmToken(authToken: String) {
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
+            getSharedPreferences("axf_prefs", MODE_PRIVATE)
+                .edit().putString("fcm_token", fcmToken).apply()
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    RetrofitClient.instance.registrarFcmToken(
+                        "Bearer $authToken",
+                        FcmTokenRequest(fcmToken)
+                    )
+                } catch (_: Exception) {}
+            }
         }
     }
 }

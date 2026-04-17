@@ -18,10 +18,10 @@ import org.json.JSONObject
 
 class ChatListaActivity : AppCompatActivity() {
 
-    private lateinit var rv: RecyclerView
+    private lateinit var rv:      RecyclerView
     private lateinit var adapter: ChatConversacionesAdapter
     private var tvSubtitulo: TextView? = null
-    private var token = ""
+    private var token  = ""
     private var socket: Socket? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,8 +38,11 @@ class ChatListaActivity : AppCompatActivity() {
         rv.layoutManager = LinearLayoutManager(this)
 
         adapter = ChatConversacionesAdapter(mutableListOf()) { conv ->
+            // Guardar nombre en caché para que ChatSocketService lo use en notificaciones
+            guardarNombrePersonal(conv.id_personal, conv.nombre_personal)
+
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("id_personal", conv.id_personal)
+            intent.putExtra("id_personal",     conv.id_personal)
             intent.putExtra("nombre_personal", conv.nombre_personal)
             startActivity(intent)
         }
@@ -64,16 +67,27 @@ class ChatListaActivity : AppCompatActivity() {
                 val resp = RetrofitClient.instance.getConversaciones("Bearer $token")
                 if (resp.isSuccessful) {
                     val lista = resp.body() ?: emptyList()
+
+                    // Guardar todos los nombres en caché para las notificaciones
+                    lista.forEach { guardarNombrePersonal(it.id_personal, it.nombre_personal) }
+
                     tvSubtitulo?.text = if (lista.any { it.ultimo_mensaje != null })
                         "Tus conversaciones" else "Tu entrenador / nutriólogo"
+
                     adapter.reemplazar(lista)
                 } else {
-                    Toast.makeText(this@ChatListaActivity,
-                        "Error ${resp.code()} al cargar.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this@ChatListaActivity,
+                        "Error ${resp.code()} al cargar.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ChatListaActivity,
-                    "Sin conexión: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@ChatListaActivity,
+                    "Sin conexión: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -81,7 +95,7 @@ class ChatListaActivity : AppCompatActivity() {
     private fun conectarSocket() {
         try {
             val sk = IO.socket(
-                RetrofitClient.BASE_URL,
+                RetrofitClient.BASE_URL.trimEnd('/'),
                 IO.Options.builder()
                     .setAuth(mapOf("token" to token))
                     .setReconnection(true)
@@ -93,7 +107,7 @@ class ChatListaActivity : AppCompatActivity() {
 
             // Nuevo mensaje → actualizar preview y badge
             sk.on("chat:mensaje_nuevo") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data       = args.getOrNull(0) as? JSONObject ?: return@on
                 val idPersonal = data.optInt("id_personal")
                 val mensaje    = data.optJSONObject("mensaje")?.optString("contenido") ?: ""
                 runOnUiThread {
@@ -103,20 +117,20 @@ class ChatListaActivity : AppCompatActivity() {
 
             // Mensajes leídos → limpiar badge
             sk.on("chat:mensajes_leidos") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data       = args.getOrNull(0) as? JSONObject ?: return@on
                 val idPersonal = data.optInt("id_personal")
                 runOnUiThread { adapter.limpiarBadge(idPersonal) }
             }
 
-            // Está escribiendo → mostrar en preview
+            // Está escribiendo
             sk.on("chat:escribiendo") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data       = args.getOrNull(0) as? JSONObject ?: return@on
                 val idPersonal = data.optInt("id_personal")
                 runOnUiThread { adapter.setEscribiendo(idPersonal, true) }
             }
 
             sk.on("chat:parar_escribir") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data       = args.getOrNull(0) as? JSONObject ?: return@on
                 val idPersonal = data.optInt("id_personal")
                 runOnUiThread { adapter.setEscribiendo(idPersonal, false) }
             }
@@ -125,5 +139,15 @@ class ChatListaActivity : AppCompatActivity() {
         } catch (e: Exception) {
             android.util.Log.w("ChatLista", "Socket error: ${e.message}")
         }
+    }
+
+    /**
+     * Guarda el nombre del personal en SharedPreferences para que
+     * ChatSocketService pueda mostrarlo en las notificaciones sin
+     * necesitar hacer una llamada al backend.
+     */
+    private fun guardarNombrePersonal(idPersonal: Int, nombre: String) {
+        getSharedPreferences("axf_personal_names", MODE_PRIVATE)
+            .edit().putString("personal_$idPersonal", nombre).apply()
     }
 }

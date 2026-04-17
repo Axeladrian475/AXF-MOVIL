@@ -27,6 +27,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Crear canales de notificación (idempotente, se puede llamar varias veces)
+        MyFirebaseMessagingService.crearCanales(this)
+
+        // Asegurar que el servicio de mensajes en background esté corriendo
+        ChatSocketService.start(this)
+
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         token = prefs.getString("token", "") ?: ""
         val suscripcionActiva = prefs.getBoolean("suscripcionActiva", false)
@@ -47,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         val navReportar = findViewById<View>(R.id.navReportar)
         val navChat     = findViewById<View>(R.id.navChat)
 
-        // ✅ Botón Entreno → abre lista de rutinas
         navEntreno.setOnClickListener {
             startActivity(Intent(this, RutinasActivity::class.java))
         }
@@ -57,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         navReportar.setOnClickListener {
             android.widget.Toast.makeText(this, "Próximamente: Reportar", android.widget.Toast.LENGTH_SHORT).show()
         }
-
         navChat.setOnClickListener {
             tvChatBadge.visibility = View.GONE
             startActivity(Intent(this, ChatListaActivity::class.java))
@@ -87,7 +91,8 @@ class MainActivity : AppCompatActivity() {
                             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                             val vence = sdf.parse(fechaStr)
                             if (vence != null) {
-                                val dias = ((vence.time - Date().time) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+                                val dias = ((vence.time - Date().time) / (1000 * 60 * 60 * 24))
+                                    .toInt().coerceAtLeast(0)
                                 tvDias.text = "$dias Días"
                                 tvVencimiento.text = "Vence: $fechaStr"
                             }
@@ -102,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                             tvDias.text = "0 Días"
                         }
                     }
-                } catch (_: Exception) { }
+                } catch (_: Exception) {}
             }
         }
 
@@ -121,13 +126,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Actualizar badge de mensajes no leídos cada vez que se vuelve a esta pantalla
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
                     val resp = RetrofitClient.instance.getNoLeidos("Bearer $token")
                     if (resp.isSuccessful) {
-                        val count = resp.body()?.no_leidos ?: 0
-                        actualizarBadge(count)
+                        actualizarBadge(resp.body()?.no_leidos ?: 0)
                     }
                 } catch (_: Exception) {}
             }
@@ -170,7 +175,11 @@ class MainActivity : AppCompatActivity() {
                 textColor = android.graphics.Color.parseColor("#888888")
                 textSize = 10f
             }
-            axisLeft.apply { setDrawGridLines(false); setDrawLabels(false); axisMinimum = 0f }
+            axisLeft.apply {
+                setDrawGridLines(false)
+                setDrawLabels(false)
+                axisMinimum = 0f
+            }
             axisRight.isEnabled = false
             animateY(800)
             invalidate()

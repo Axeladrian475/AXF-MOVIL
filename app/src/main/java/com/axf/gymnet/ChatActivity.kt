@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -31,22 +32,22 @@ import org.json.JSONObject
 class ChatActivity : AppCompatActivity() {
 
     private var socket: Socket? = null
-    private lateinit var adapter: ChatMensajesAdapter
-    private lateinit var rv: RecyclerView
-    private lateinit var etMensaje: EditText
-    private lateinit var tvEscribiendo: TextView
-    private lateinit var tvNombre: TextView
-    private lateinit var llReply: View
+    private lateinit var adapter:         ChatMensajesAdapter
+    private lateinit var rv:              RecyclerView
+    private lateinit var etMensaje:       EditText
+    private lateinit var tvEscribiendo:   TextView
+    private lateinit var tvNombre:        TextView
+    private lateinit var llReply:         View
     private lateinit var tvReplyContenido: TextView
-    private lateinit var tvReplyDe: TextView
+    private lateinit var tvReplyDe:       TextView
     private lateinit var btnCancelarReply: View
 
-    private var idPersonal = 0
-    private var token = ""
-    private var replyMsg: ChatMensaje? = null
+    private var idPersonal  = 0
+    private var token       = ""
+    private var replyMsg:    ChatMensaje? = null
     private var editandoMsg: ChatMensaje? = null
     private var hayMasAntiguos = false
-    private var offset = 0
+    private var offset         = 0
     private var cargandoAntiguos = false
 
     private val handler = Handler(Looper.getMainLooper())
@@ -59,15 +60,16 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Permitir que la actividad se muestre sobre la pantalla de bloqueo
+
+        // Mostrar sobre pantalla de bloqueo cuando viene de notificación
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         } else {
+            @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
         }
 
@@ -75,12 +77,18 @@ class ChatActivity : AppCompatActivity() {
 
         pedirPermisoNotificaciones()
 
-        val prefs  = getSharedPreferences("axf_prefs", MODE_PRIVATE)
-        token      = prefs.getString("token", "") ?: ""
+        val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        token = prefs.getString("token", "") ?: ""
 
         // Soporta tanto intent normal como deep link desde notificación push
         idPersonal = intent.getIntExtra("id_personal", 0)
         val nombre = intent.getStringExtra("nombre_personal") ?: "Chat"
+
+        // Guardar nombre en caché para las notificaciones de background
+        if (idPersonal > 0 && nombre != "Chat") {
+            getSharedPreferences("axf_personal_names", MODE_PRIVATE)
+                .edit().putString("personal_$idPersonal", nombre).apply()
+        }
 
         rv               = findViewById(R.id.rvMensajes)
         etMensaje        = findViewById(R.id.etMensaje)
@@ -133,6 +141,26 @@ class ChatActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+    }
+
+    /**
+     * onNewIntent se llama cuando la actividad ya está en la pila (singleTop)
+     * y se recibe otro intent (por ejemplo, otra notificación de otro entrenador).
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        val nuevoIdPersonal = intent.getIntExtra("id_personal", 0)
+        if (nuevoIdPersonal != 0 && nuevoIdPersonal != idPersonal) {
+            // Diferente conversación → recargar
+            idPersonal = nuevoIdPersonal
+            val nombre = intent.getStringExtra("nombre_personal") ?: "Chat"
+            tvNombre.text = nombre
+            adapter.limpiar()
+            cargarMensajes()
+            marcarComoLeidoAPI()
+        }
     }
 
     private fun pedirPermisoNotificaciones() {
@@ -271,8 +299,8 @@ class ChatActivity : AppCompatActivity() {
             .put("id_personal", idPersonal)
             .put("contenido", texto)
         reply?.let {
-            data.put("id_respuesta", it.id_mensaje)
-            data.put("respuesta_contenido", it.contenido.take(200))
+            data.put("id_respuesta",          it.id_mensaje)
+            data.put("respuesta_contenido",   it.contenido.take(200))
             data.put("respuesta_enviado_por", it.enviado_por)
         }
         cancelarReply()
@@ -289,6 +317,7 @@ class ChatActivity : AppCompatActivity() {
                 }
             })
         } else {
+            // Fallback HTTP si el socket no está disponible
             lifecycleScope.launch {
                 try {
                     val req = EnviarMensajeRequest(
@@ -349,9 +378,9 @@ class ChatActivity : AppCompatActivity() {
 
     private fun prepararReply(msg: ChatMensaje) {
         replyMsg = msg
-        tvReplyDe.text = if (msg.enviado_por == "suscriptor") "Tú" else tvNombre.text
+        tvReplyDe.text        = if (msg.enviado_por == "suscriptor") "Tú" else tvNombre.text
         tvReplyContenido.text = msg.contenido
-        llReply.visibility = View.VISIBLE
+        llReply.visibility    = View.VISIBLE
         etMensaje.requestFocus()
     }
 
@@ -374,7 +403,7 @@ class ChatActivity : AppCompatActivity() {
     private fun enviarEdicion(texto: String) {
         val msg = editandoMsg ?: return
         socket?.emit("chat:editar", JSONObject()
-            .put("id_mensaje", msg.id_mensaje)
+            .put("id_mensaje",      msg.id_mensaje)
             .put("nuevo_contenido", texto))
         editandoMsg = null
         etMensaje.setText("")
