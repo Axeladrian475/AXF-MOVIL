@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         val navChat     = findViewById<View>(R.id.navChat)
 
         navEntreno.setOnClickListener  { startActivity(Intent(this, RutinasActivity::class.java)) }
-        navDieta.setOnClickListener    { android.widget.Toast.makeText(this, "Próximamente: Dieta", android.widget.Toast.LENGTH_SHORT).show() }
+        navDieta.setOnClickListener    { startActivity(Intent(this, DietasActivity::class.java)) }
         navReportar.setOnClickListener { startActivity(Intent(this, ReportarActivity::class.java)) }
         navChat.setOnClickListener {
             tvChatBadge.visibility = View.GONE

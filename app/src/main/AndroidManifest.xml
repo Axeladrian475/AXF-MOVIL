@@ -54,6 +54,14 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".DietasActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DietaDetalleActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ChatActivity"
             android:exported="true"
             android:launchMode="singleTop"

@@ -5,6 +5,8 @@ import com.axf.gymnet.data.ChatConversacion
 import com.axf.gymnet.data.ChatMensaje
 import com.axf.gymnet.data.CrearReporteRequest
 import com.axf.gymnet.data.CrearReporteResponse
+import com.axf.gymnet.data.DietaDetalle
+import com.axf.gymnet.data.DietaResumen
 import com.axf.gymnet.data.EnviarMensajeRequest
 import com.axf.gymnet.data.FcmTokenRequest
 import com.axf.gymnet.data.GuardarSerieRequest
@@ -85,6 +87,18 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: FcmTokenRequest
     ): Response<Unit>
+
+    // ── DIETAS ────────────────────────────────────────────────────────────────
+    @GET("api/movil/nutricion/dietas")
+    suspend fun getDietas(
+        @Header("Authorization") token: String
+    ): Response<List<DietaResumen>>
+
+    @GET("api/movil/nutricion/dietas/{id}")
+    suspend fun getDietaDetalle(
+        @Header("Authorization") token: String,
+        @Path("id") idDieta: Int
+    ): Response<DietaDetalle>
 
     // ── REPORTES ──────────────────────────────────────────────────────────────
 
