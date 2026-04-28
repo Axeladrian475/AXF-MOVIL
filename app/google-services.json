@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "201767972302",
+    "project_id": "axf-gymnet",
+    "storage_bucket": "axf-gymnet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:201767972302:android:3fdc32d3b8a14d121fcf9f",
+        "android_client_info": {
+          "package_name": "com.axf.gymnet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpMbCLK_kd767nXfWf9mB8byjyxIzoqlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

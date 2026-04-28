@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F2F2F2">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#071B2F"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/btnVolverReportar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="←"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:paddingEnd="12dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📋  Reportes"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+
+    <!-- TABS -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayoutReportes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#071B2F"
+        app:tabTextColor="#AAAAAA"
+        app:tabSelectedTextColor="#F26A21"
+        app:tabIndicatorColor="#F26A21"
+        app:tabMode="fixed"
+        app:tabGravity="fill">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nuevo"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Públicos"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mis Reportes"/>
+    </com.google.android.material.tabs.TabLayout>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 0: NUEVO REPORTE                                                 -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/layoutNuevoReporte"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Sucursal -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sucursal donde ocurrió el problema"
+                    android:textColor="#555555"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp"
+                    android:layout_marginBottom="12dp">
+                    <Spinner
+                        android:id="@+id/spinnerSucursal"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:background="@null"/>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Categoría -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Categoría"
+                    android:textColor="#555555"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp"
+                    android:layout_marginBottom="12dp">
+                    <Spinner
+                        android:id="@+id/spinnerCategoria"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:background="@null"/>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Personal (solo Reporte de Personal) -->
+                <LinearLayout
+                    android:id="@+id/layoutPersonal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Personal a reportar"
+                        android:textColor="#555555"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="2dp"
+                        android:layout_marginBottom="12dp">
+                        <Spinner
+                            android:id="@+id/spinnerPersonal"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:background="@null"/>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Checkbox atención previa -->
+                    <LinearLayout
+                        android:id="@+id/layoutAtencionPrevia"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="#FFF3E0"
+                        android:padding="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="ℹ Este personal te brindó atención previamente."
+                            android:textColor="#E65100"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="8dp"/>
+
+                        <CheckBox
+                            android:id="@+id/cbSobreAtencion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Mi reporte es sobre esa atención que me brindó"
+                            android:textColor="#333333"
+                            android:textSize="13sp"
+                            android:buttonTint="#F26A21"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Descripción -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Descripción del problema"
+                    android:textColor="#555555"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDescripcion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minLines="4"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:hint="Describe el problema con detalle..."
+                        android:textSize="14sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Privado -->
+                <CheckBox
+                    android:id="@+id/cbPrivado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔒 Hacer reporte privado (solo visible al personal)"
+                    android:textColor="#555555"
+                    android:textSize="13sp"
+                    android:buttonTint="#F26A21"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Botón -->
+                <Button
+                    android:id="@+id/btnEnviarReporte"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Enviar Reporte"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#F26A21"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvEstadoEnvio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: REPORTES PÚBLICOS                                             -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/layoutReportesPublicos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Selector sucursal -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ver reportes de:"
+                android:textColor="#555555"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerSucursalPublicos"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="#F5F5F5"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"/>
+        </LinearLayout>
+
+        <!-- Progress -->
+        <ProgressBar
+            android:id="@+id/pbPublicos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:indeterminateTint="#F26A21"
+            android:visibility="gone"/>
+
+        <!-- Sin reportes -->
+        <TextView
+            android:id="@+id/tvSinReportes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No hay reportes activos en esta sucursal 🎉"
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone"/>
+
+        <!-- Lista -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvReportesPublicos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: MIS REPORTES                                                  -->
+    <!-- ════════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/layoutMisReportes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/pbMisReportes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:indeterminateTint="#F26A21"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvSinMisReportes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aún no has enviado ningún reporte."
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMisReportes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+</LinearLayout>

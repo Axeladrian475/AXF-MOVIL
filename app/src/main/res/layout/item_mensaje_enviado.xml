@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <LinearLayout
+        android:id="@+id/llBurbuja"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="60dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_burbuja_enviado"
+        android:padding="10dp"
+        android:maxWidth="280dp">
+
+        <!-- Reply/Cita -->
+        <LinearLayout
+            android:id="@+id/llReply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#20FF8C00"
+            android:padding="6dp"
+            android:layout_marginBottom="6dp"
+            android:paddingStart="8dp"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/tvReplyDe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#FF8C00"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/tvReplyContenido"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="#888888"
+                android:maxLines="2"
+                android:ellipsize="end"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvContenido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#111111"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="end"
+            android:layout_marginTop="2dp">
+            <TextView
+                android:id="@+id/tvEditado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="editado"
+                android:textSize="9sp"
+                android:textColor="#888888"
+                android:textStyle="italic"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"/>
+            <TextView
+                android:id="@+id/tvHora"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#888888"/>
+            <TextView
+                android:id="@+id/tvTicks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:layout_marginStart="4dp"
+                android:textColor="#AAAAAA"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

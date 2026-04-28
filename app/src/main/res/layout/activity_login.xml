@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#071B2F"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="80dp"
+        android:paddingBottom="40dp">
+
+        <!-- LOGO encima de la tarjeta -->
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="220dp"
+            android:layout_height="90dp"
+            android:src="@drawable/logo_axf"
+            android:scaleType="fitCenter"
+            android:contentDescription="AxF GymNet"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- TARJETA NARANJA -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="@drawable/bg_card_orange"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="28dp">
+
+            <!-- TÍTULO -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INICIAR SESIÓN"
+                android:textColor="#000000"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/jockey_one"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="28dp"/>
+
+            <!-- LABEL USUARIO -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="USUARIO"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:fontFamily="@font/jockey_one"
+                android:letterSpacing="0.05"
+                android:gravity="center"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- CAMPO CORREO -->
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="USUARIO"
+                android:inputType="textEmailAddress"
+                android:background="@drawable/bg_input_gray"
+                android:textColor="#555555"
+                android:textColorHint="#AAAAAA"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="20dp"/>
+
+            <!-- LABEL CONTRASEÑA -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CONTRASEÑA"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:fontFamily="@font/jockey_one"
+                android:letterSpacing="0.05"
+                android:gravity="center"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- CAMPO CONTRASEÑA -->
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="CONTRASEÑA"
+                android:inputType="textPassword"
+                android:background="@drawable/bg_input_gray"
+                android:textColor="#555555"
+                android:textColorHint="#AAAAAA"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- MENSAJE DE ERROR -->
+            <TextView
+                android:id="@+id/tvError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="#CC0000"
+                android:padding="8dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"/>
+
+            <!-- BOTÓN ENTRAR -->
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="ENTRAR"
+                android:backgroundTint="#071B2F"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:fontFamily="@font/jockey_one"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
+                android:stateListAnimator="@null"
+                android:layout_marginTop="16dp"/>
+
+            <!-- PROGRESS BAR -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:indeterminateTint="#071B2F"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

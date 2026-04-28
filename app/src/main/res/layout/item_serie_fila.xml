@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="52dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:background="#1C1C1E">
+
+    <!-- Número de serie -->
+    <TextView
+        android:id="@+id/tvSerieNum"
+        android:layout_width="36dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <!-- Anterior (preset de la rutina) -->
+    <TextView
+        android:id="@+id/tvAnterior"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="55kg x 7"
+        android:textColor="#555555"
+        android:textSize="13sp"/>
+
+    <!-- Campo KG -->
+    <EditText
+        android:id="@+id/etPesoSerie"
+        android:layout_width="64dp"
+        android:layout_height="38dp"
+        android:hint="kg"
+        android:inputType="numberDecimal"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#555555"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:background="@drawable/bg_input_serie"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Campo REPS -->
+    <EditText
+        android:id="@+id/etRepsSerie"
+        android:layout_width="54dp"
+        android:layout_height="38dp"
+        android:hint="reps"
+        android:inputType="number"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#555555"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:background="@drawable/bg_input_serie"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Check button -->
+    <ImageButton
+        android:id="@+id/btnCheckSerie"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_check_empty"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Completar serie"/>
+
+</LinearLayout>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1C1C1E"
+    android:layout_marginTop="8dp">
+
+    <!-- Nombre del ejercicio + menú -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <!-- Imagen del ejercicio (placeholder) -->
+        <ImageView
+            android:id="@+id/imgEjercicio"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:tint="#555555"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="Imagen ejercicio"/>
+
+        <TextView
+            android:id="@+id/tvNombreEjercicio"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Jalón al Pecho (Cable)"
+            android:textColor="#007AFF"
+            android:textSize="17sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:text="⋮"
+            android:textColor="#AAAAAA"
+            android:textSize="22sp"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <!-- Notas técnicas (ocultas si no hay) -->
+    <TextView
+        android:id="@+id/tvNotasTecnicas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#AAAAAA"
+        android:textSize="13sp"
+        android:paddingStart="72dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"/>
+
+    <!-- Chip de descanso -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏱"
+            android:textSize="14sp"
+            android:layout_marginEnd="4dp"/>
+
+        <TextView
+            android:id="@+id/tvDescanso"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descanso: 2min"
+            android:textColor="#007AFF"
+            android:textSize="13sp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+    <!-- Encabezado de tabla -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="6dp">
+
+        <TextView
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:text="SERIE"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ANTERIOR"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="⊕ KG"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="REPS"
+            android:textColor="#666666"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+        <TextView
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:text="✓"
+            android:textColor="#666666"
+            android:textSize="13sp"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <!-- Filas de series (se llenan dinámicamente) -->
+    <LinearLayout
+        android:id="@+id/tablaSeries"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
+
+    <!-- Botón agregar serie -->
+    <Button
+        android:id="@+id/btnAgregarSerie"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:text="+ Agregar Serie"
+        android:backgroundTint="#2C2C2E"
+        android:textColor="#AAAAAA"
+        android:textSize="14sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:stateListAnimator="@null"/>
+
+</LinearLayout>
