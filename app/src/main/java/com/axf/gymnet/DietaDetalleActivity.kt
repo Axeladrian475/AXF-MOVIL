@@ -21,9 +21,10 @@ class DietaDetalleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dieta_detalle)
 
-        val token    = getSharedPreferences("axf_prefs", MODE_PRIVATE).getString("token", "") ?: ""
-        val idDieta  = intent.getIntExtra("id_dieta", -1)
-        val baseUrl  = RetrofitClient.BASE_URL
+        val prefs   = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        val token   = prefs.getString("token", "") ?: ""
+        val idDieta = intent.getIntExtra("id_dieta", -1)
+        val baseUrl = RetrofitClient.BASE_URL
 
         val tvBack      = findViewById<TextView>(R.id.tvDetalleBack)
         val tvTitulo    = findViewById<TextView>(R.id.tvDetalleTitulo)
@@ -63,9 +64,10 @@ class DietaDetalleActivity : AppCompatActivity() {
                     tvFecha.text = "Fecha: ${dieta.creado_en.take(10)}"
                 }
 
-                // Botón PDF → abre en navegador
+                // Botón PDF → pasa el token como query param porque se abre en el navegador
+                // y no puede enviar headers de Authorization
                 btnPdf.setOnClickListener {
-                    val url = "${baseUrl}api/movil/nutricion/dietas/$idDieta/pdf"
+                    val url = "${baseUrl}api/movil/nutricion/dietas/$idDieta/pdf?token=$token"
                     try {
                         val i = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                         startActivity(i)

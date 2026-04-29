@@ -15,8 +15,10 @@ data class DietaDetalle(
     val id_dieta: Int,
     val creado_en: String,
     val nutriologo: String,
-    val dias: List<DietaDia>,
-    val comidas: List<DietaComida>   // lista flat que también viene en la respuesta
+    val dias: List<DietaDia>
+    // NOTA: Se eliminó el campo `comidas` flat porque Retrofit lanzaba
+    // un error de parseo al recibir la respuesta. Los datos ya vienen
+    // correctamente agrupados dentro de cada DietaDia.
 )
 
 data class DietaDia(
