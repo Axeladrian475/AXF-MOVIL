@@ -1,5 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    AxF GymNet — Design System
+    ===========================
+    PALETA UNIFICADA para toda la app.
+
+    Backgrounds (oscuros, de lo más profundo al más claro):
+      axf_bg_deep      #070E1A  — fondo más oscuro (pantallas principales)
+      axf_bg_primary   #071B2F  — azul marino principal (headers, tarjetas primarias)
+      axf_bg_card      #0F1A2E  — tarjetas oscuras dentro de pantallas dark
+      axf_bg_surface   #1A2A3F  — superficie elevada (chips, tags)
+      axf_bg_input     #12243A  — fondo de inputs en pantallas oscuras
+
+    Acento / Marca:
+      axf_orange       #F26A21  — naranja principal AxF (botones, iconos activos, CTA)
+      axf_orange_dim   #1A0D00  — naranja muy oscuro (fondos de tags con borde naranja)
+
+    Texto:
+      axf_text_primary   #FFFFFF  — texto principal sobre fondos oscuros
+      axf_text_secondary #AAAAAA  — texto secundario / subtítulos
+      axf_text_hint      #555566  — hints en inputs
+      axf_text_on_light  #071B2F  — texto sobre fondos claros (botón login sobre card naranja)
+
+    Navegación inferior (siempre dark):
+      axf_nav_bg       #071B2F
+      axf_nav_active   #F26A21
+      axf_nav_inactive #667788
+
+    Estados:
+      axf_success  #27AE60
+      axf_warning  #E67E22
+      axf_error    #C0392B
+      axf_info     #2980B9
+
+    Chat — burbuja enviada usa el naranja de marca, recibida usa surface oscuro.
+-->
 <resources>
+    <!-- ── Fondos ── -->
+    <color name="axf_bg_deep">#070E1A</color>
+    <color name="axf_bg_primary">#071B2F</color>
+    <color name="axf_bg_card">#0F1A2E</color>
+    <color name="axf_bg_surface">#1A2A3F</color>
+    <color name="axf_bg_input">#12243A</color>
+    <color name="axf_bg_input_stroke">#2A3F56</color>
+
+    <!-- ── Acento / Marca ── -->
+    <color name="axf_orange">#F26A21</color>
+    <color name="axf_orange_tint">#331A00</color>
+    <color name="axf_orange_dim">#1A0D00</color>
+
+    <!-- ── Texto ── -->
+    <color name="axf_text_primary">#FFFFFF</color>
+    <color name="axf_text_secondary">#AAAAAA</color>
+    <color name="axf_text_tertiary">#667788</color>
+    <color name="axf_text_hint">#445566</color>
+    <color name="axf_text_on_orange">#FFFFFF</color>
+    <color name="axf_text_on_light">#071B2F</color>
+
+    <!-- ── Navegación inferior ── -->
+    <color name="axf_nav_bg">#071B2F</color>
+    <color name="axf_nav_active">#F26A21</color>
+    <color name="axf_nav_inactive">#556677</color>
+
+    <!-- ── Estados ── -->
+    <color name="axf_success">#27AE60</color>
+    <color name="axf_warning">#E67E22</color>
+    <color name="axf_error">#C0392B</color>
+    <color name="axf_info">#2980B9</color>
+
+    <!-- ── Chat ── -->
+    <color name="axf_chat_bg">#070E1A</color>
+    <color name="axf_bubble_sent">#F26A21</color>
+    <color name="axf_bubble_received">#1A2A3F</color>
+    <color name="axf_bubble_reply_bg">#1F1200</color>
+    <color name="axf_chat_input_bg">#0F1A2E</color>
+    <color name="axf_chat_bar_bg">#071B2F</color>
+
+    <!-- ── Entreno (hereda paleta dark, sin blues iOS) ── -->
+    <color name="axf_entreno_bg">#070E1A</color>
+    <color name="axf_entreno_card">#0F1A2E</color>
+    <color name="axf_entreno_accent">#F26A21</color>
+    <color name="axf_entreno_timer">#F26A21</color>
+    <color name="axf_entreno_input">#1A2A3F</color>
+
+    <!-- ── Compat legacy ── -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

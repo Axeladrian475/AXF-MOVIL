@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    dialog_descanso.xml — Diálogo de descanso entre series
+    ANTES: progressTint #007AFF (azul iOS)
+    AHORA: axf_orange — paleta unificada
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="280dp"
+    android:layout_width="288dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#1C1C1E"
+    android:background="@color/axf_bg_card"
     android:padding="28dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Descanso"
-        android:textColor="#AAAAAA"
-        android:textSize="14sp"
+        android:textColor="@color/axf_text_secondary"
+        android:textSize="13sp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.1"
         android:layout_marginBottom="16dp"/>
 
     <!-- Cuenta atrás grande -->
@@ -22,19 +29,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="2:00"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/axf_text_primary"
         android:textSize="64sp"
         android:textStyle="bold"
         android:layout_marginBottom="20dp"/>
 
-    <!-- Barra de progreso circular (lineal aquí) -->
+    <!-- Barra de progreso -->
     <ProgressBar
         android:id="@+id/progressDescanso"
         android:layout_width="match_parent"
         android:layout_height="6dp"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:progressTint="#007AFF"
-        android:progressBackgroundTint="#333333"
+        android:progressTint="@color/axf_orange"
+        android:progressBackgroundTint="@color/axf_bg_surface"
         android:layout_marginBottom="24dp"/>
 
     <!-- Botón saltar -->
@@ -43,8 +50,8 @@
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:text="Saltar"
-        android:backgroundTint="#2C2C2E"
-        android:textColor="#AAAAAA"
+        android:backgroundTint="@color/axf_bg_surface"
+        android:textColor="@color/axf_text_secondary"
         android:textSize="15sp"
         android:stateListAnimator="@null"/>
 

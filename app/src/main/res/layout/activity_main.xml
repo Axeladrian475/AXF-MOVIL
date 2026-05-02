@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    activity_main.xml — Pantalla principal (Dashboard)
+    Design system AxF: fondo axf_bg_deep, header axf_bg_primary,
+    navegación inferior dark unificada, sin emojis.
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F2F2F2">
+    android:background="@color/axf_bg_deep">
 
     <!-- CONTENIDO SCROLLEABLE -->
     <androidx.core.widget.NestedScrollView
@@ -19,11 +24,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- HEADER -->
+            <!-- ── HEADER ── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#071B2F"
+                android:background="@color/axf_bg_primary"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:paddingStart="20dp"
@@ -38,65 +43,64 @@
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="28dp"
+                        android:layout_width="80dp"
+                        android:layout_height="30dp"
                         android:src="@drawable/logo_axf"
                         android:scaleType="fitStart"
-                        android:contentDescription="AxF"
+                        android:contentDescription="AxF GymNet"
                         tools:ignore="MissingConstraints"/>
 
-                    <!-- Nombre de usuario -->
                     <TextView
                         android:id="@+id/tvNombreUsuario"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Bienvenido"
-                        android:textColor="#AAAAAA"
+                        android:textColor="@color/axf_text_secondary"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp"/>
                 </LinearLayout>
 
-                <!-- Días restantes -->
+                <!-- Días restantes (chip oscuro con ícono de llama) -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="#1A2E45"
+                    android:background="@color/axf_bg_surface"
                     android:paddingStart="10dp"
                     android:paddingEnd="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
                     android:layout_marginEnd="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔥"
-                        android:textSize="14sp"/>
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_fire"
+                        android:contentDescription="Días restantes"/>
 
                     <TextView
                         android:id="@+id/tvDiasRestantes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="-- Días"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/axf_text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:layout_marginStart="4dp"/>
+                        android:layout_marginStart="5dp"/>
                 </LinearLayout>
 
-                <!-- Campana -->
-                <TextView
+                <!-- Notificaciones -->
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:text="🔔"
-                    android:textSize="20sp"
-                    android:gravity="center"/>
+                    android:src="@drawable/ic_bell"
+                    android:contentDescription="Notificaciones"
+                    android:padding="4dp"/>
 
             </LinearLayout>
 
-            <!-- CONTENIDO PRINCIPAL -->
+            <!-- ── CONTENIDO PRINCIPAL ── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -110,8 +114,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#071B2F"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/axf_bg_card"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -123,10 +127,12 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Estado Suscripción"
-                            android:textColor="#AAAAAA"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="8dp"/>
+                            android:text="Estado de suscripción"
+                            android:textColor="@color/axf_text_secondary"
+                            android:textSize="11sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.08"
+                            android:layout_marginBottom="10dp"/>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -142,13 +148,13 @@
                                 android:orientation="horizontal"
                                 android:gravity="center_vertical">
 
-                                <TextView
+                                <ImageView
                                     android:id="@+id/tvEstadoIcono"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="✅"
-                                    android:textSize="18sp"
-                                    android:layout_marginEnd="8dp"/>
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_check_circle"
+                                    android:contentDescription="Estado suscripción"
+                                    android:layout_marginEnd="10dp"/>
 
                                 <LinearLayout
                                     android:layout_width="wrap_content"
@@ -160,7 +166,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="ACTIVA"
-                                        android:textColor="#2ECC71"
+                                        android:textColor="@color/axf_success"
                                         android:textSize="18sp"
                                         android:textStyle="bold"/>
 
@@ -169,46 +175,45 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="Vence: --/--/----"
-                                        android:textColor="#AAAAAA"
+                                        android:textColor="@color/axf_text_secondary"
                                         android:textSize="11sp"/>
 
-                                    <!-- Tipo de plan -->
                                     <TextView
                                         android:id="@+id/tvTipoPlan"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text=""
-                                        android:textColor="#F26A21"
+                                        android:textColor="@color/axf_orange"
                                         android:textSize="11sp"
                                         android:textStyle="bold"/>
 
                                 </LinearLayout>
                             </LinearLayout>
 
-                            <!-- Puntos -->
+                            <!-- Puntos con ícono estrella -->
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
                                 android:gravity="center_vertical"
-                                android:background="#1A2E45"
+                                android:background="@color/axf_bg_surface"
                                 android:paddingStart="12dp"
                                 android:paddingEnd="12dp"
                                 android:paddingTop="6dp"
                                 android:paddingBottom="6dp">
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="⭐"
-                                    android:textSize="16sp"/>
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_star"
+                                    android:contentDescription="Puntos"/>
 
                                 <TextView
                                     android:id="@+id/tvPuntos"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0 Pts"
-                                    android:textColor="#FFFFFF"
+                                    android:textColor="@color/axf_text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold"
                                     android:layout_marginStart="6dp"/>
@@ -225,8 +230,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/axf_bg_card"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -240,43 +245,42 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Afluencia en AxF"
-                            android:textColor="#071B2F"
+                            android:textColor="@color/axf_text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:layout_marginBottom="4dp"/>
+                            android:layout_marginBottom="2dp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Horarios Pico (Promedio)"
-                            android:textColor="#888888"
+                            android:text="Horarios pico (promedio)"
+                            android:textColor="@color/axf_text_secondary"
                             android:textSize="12sp"
                             android:layout_marginBottom="12dp"/>
 
-                        <!-- GRÁFICA -->
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/barChart"
                             android:layout_width="match_parent"
                             android:layout_height="180dp"/>
 
-                        <!-- BOTÓN AFORO -->
                         <Button
                             android:id="@+id/btnActualizarAforo"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:text="↻  Actualizar Aforo Actual"
-                            android:backgroundTint="#2ECC71"
-                            android:textColor="#FFFFFF"
+                            android:text="Actualizar aforo actual"
+                            android:backgroundTint="@color/axf_success"
+                            android:textColor="@color/axf_text_primary"
                             android:textStyle="bold"
                             android:textSize="14sp"
-                            android:layout_marginTop="12dp"/>
+                            android:layout_marginTop="12dp"
+                            android:stateListAnimator="@null"/>
 
                         <TextView
                             android:id="@+id/tvAforo"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text=""
-                            android:textColor="#071B2F"
+                            android:textColor="@color/axf_text_primary"
                             android:textSize="13sp"
                             android:gravity="center"
                             android:layout_marginTop="8dp"
@@ -289,14 +293,14 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <!-- ── BARRA DE NAVEGACIÓN INFERIOR ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:background="#FFFFFF"
+        android:background="@color/axf_bg_primary"
         android:orientation="horizontal"
         android:gravity="center"
-        android:elevation="8dp"
+        android:elevation="12dp"
         android:layout_gravity="bottom">
 
         <!-- Inicio -->
@@ -306,9 +310,20 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏠" android:textSize="20sp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Inicio" android:textSize="10sp" android:textColor="#F26A21"/>
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_home"
+                android:contentDescription="Inicio"
+                android:layout_marginBottom="3dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Inicio"
+                android:textSize="10sp"
+                android:textColor="@color/axf_nav_active"/>
         </LinearLayout>
 
         <!-- Entreno -->
@@ -318,9 +333,21 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏋️" android:textSize="20sp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Entreno" android:textSize="10sp" android:textColor="#AAAAAA"/>
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_entreno"
+                android:contentDescription="Entreno"
+                android:tint="@color/axf_nav_inactive"
+                android:layout_marginBottom="3dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Entreno"
+                android:textSize="10sp"
+                android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
         <!-- Dieta -->
@@ -330,9 +357,21 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🥗" android:textSize="20sp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dieta" android:textSize="10sp" android:textColor="#AAAAAA"/>
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_dieta"
+                android:contentDescription="Dieta"
+                android:tint="@color/axf_nav_inactive"
+                android:layout_marginBottom="3dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dieta"
+                android:textSize="10sp"
+                android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
         <!-- Chat -->
@@ -342,15 +381,18 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
             <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp">
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
                     android:src="@drawable/ic_chat_nav"
-                    android:contentDescription="Chat"/>
+                    android:contentDescription="Chat"
+                    android:tint="@color/axf_nav_inactive"/>
                 <TextView
                     android:id="@+id/tvChatBadge"
                     android:layout_width="16dp"
@@ -360,14 +402,18 @@
                     android:layout_marginEnd="-4dp"
                     android:background="@drawable/bg_card_orange"
                     android:gravity="center"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/axf_text_primary"
                     android:textSize="9sp"
                     android:textStyle="bold"
                     android:visibility="gone"/>
             </FrameLayout>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Chat" android:textSize="10sp" android:textColor="#AAAAAA"
-                android:id="@+id/tvNavChatLabel"/>
+            <TextView
+                android:id="@+id/tvNavChatLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chat"
+                android:textSize="10sp"
+                android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
         <!-- Reportar -->
@@ -377,9 +423,21 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⚠️" android:textSize="20sp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reportar" android:textSize="10sp" android:textColor="#AAAAAA"/>
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_reportar"
+                android:contentDescription="Reportar"
+                android:tint="@color/axf_nav_inactive"
+                android:layout_marginBottom="3dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reportar"
+                android:textSize="10sp"
+                android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
     </LinearLayout>

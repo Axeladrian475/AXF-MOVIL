@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_ejercicio_entreno.xml — Ítem de ejercicio en pantalla de entreno
+    ANTES: nombre en azul #007AFF (estilo iOS), fondo #1C1C1E
+    AHORA: nombre en axf_orange, fondo axf_bg_card, paleta unificada
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#1C1C1E"
+    android:background="@color/axf_entreno_card"
     android:layout_marginTop="8dp">
 
     <!-- Nombre del ejercicio + menú -->
@@ -18,13 +23,12 @@
         android:paddingTop="16dp"
         android:paddingBottom="8dp">
 
-        <!-- Imagen del ejercicio (placeholder) -->
         <ImageView
             android:id="@+id/imgEjercicio"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:src="@android:drawable/ic_menu_gallery"
-            android:tint="#555555"
+            android:tint="@color/axf_text_tertiary"
             android:scaleType="centerCrop"
             android:layout_marginEnd="12dp"
             android:contentDescription="Imagen ejercicio"/>
@@ -35,27 +39,27 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Jalón al Pecho (Cable)"
-            android:textColor="#007AFF"
-            android:textSize="17sp"
+            android:textColor="@color/axf_orange"
+            android:textSize="16sp"
             android:textStyle="bold"/>
 
         <TextView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:text="⋮"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/axf_text_secondary"
             android:textSize="22sp"
             android:gravity="center"/>
 
     </LinearLayout>
 
-    <!-- Notas técnicas (ocultas si no hay) -->
+    <!-- Notas técnicas -->
     <TextView
         android:id="@+id/tvNotasTecnicas"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="#AAAAAA"
+        android:textColor="@color/axf_text_secondary"
         android:textSize="13sp"
         android:paddingStart="72dp"
         android:paddingEnd="16dp"
@@ -71,11 +75,12 @@
         android:paddingStart="16dp"
         android:paddingBottom="12dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⏱"
-            android:textSize="14sp"
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:src="@android:drawable/ic_menu_recent_history"
+            android:tint="@color/axf_orange"
+            android:contentDescription="Descanso"
             android:layout_marginEnd="4dp"/>
 
         <TextView
@@ -83,7 +88,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Descanso: 2min"
-            android:textColor="#007AFF"
+            android:textColor="@color/axf_orange"
             android:textSize="13sp"
             android:textStyle="bold"/>
 
@@ -102,44 +107,50 @@
             android:layout_width="36dp"
             android:layout_height="wrap_content"
             android:text="SERIE"
-            android:textColor="#666666"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
+            android:textColor="@color/axf_text_tertiary"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.06"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="ANTERIOR"
-            android:textColor="#666666"
-            android:textSize="11sp"
-            android:textStyle="bold"/>
+            android:textColor="@color/axf_text_tertiary"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.06"/>
 
         <TextView
             android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:text="⊕ KG"
-            android:textColor="#666666"
-            android:textSize="11sp"
+            android:text="KG"
+            android:textColor="@color/axf_text_tertiary"
+            android:textSize="10sp"
             android:textStyle="bold"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:letterSpacing="0.06"/>
 
         <TextView
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:text="REPS"
-            android:textColor="#666666"
-            android:textSize="11sp"
+            android:textColor="@color/axf_text_tertiary"
+            android:textSize="10sp"
             android:textStyle="bold"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:letterSpacing="0.06"/>
 
         <TextView
             android:layout_width="36dp"
             android:layout_height="wrap_content"
-            android:text="✓"
-            android:textColor="#666666"
-            android:textSize="13sp"
-            android:gravity="center"/>
+            android:text="OK"
+            android:textColor="@color/axf_text_tertiary"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="0.06"/>
 
     </LinearLayout>
 
@@ -156,8 +167,8 @@
         android:layout_width="match_parent"
         android:layout_height="46dp"
         android:text="+ Agregar Serie"
-        android:backgroundTint="#2C2C2E"
-        android:textColor="#AAAAAA"
+        android:backgroundTint="@color/axf_bg_surface"
+        android:textColor="@color/axf_text_secondary"
         android:textSize="14sp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"

@@ -1,14 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!--
+        AxF GymNet — Tema base unificado
+        Usa la paleta oscura (#070E1A) como fondo global.
+        El color primario es el naranja #F26A21.
+    -->
     <style name="Base.Theme.AxFGymNet" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">#071B2F</item>
-        <item name="colorPrimary">#F26A21</item>
+        <item name="android:windowBackground">@color/axf_bg_deep</item>
+        <item name="colorPrimary">@color/axf_orange</item>
+        <item name="colorOnPrimary">@color/axf_text_primary</item>
+        <item name="colorSurface">@color/axf_bg_card</item>
+        <item name="colorOnSurface">@color/axf_text_primary</item>
+        <item name="android:textColorPrimary">@color/axf_text_primary</item>
+        <item name="android:textColorSecondary">@color/axf_text_secondary</item>
     </style>
+
     <style name="Theme.AxFGymNet" parent="Base.Theme.AxFGymNet" />
+
+    <!-- Dialog de descanso -->
     <style name="DialogDescanso" parent="Theme.AppCompat.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.7</item>
+        <item name="android:backgroundDimAmount">0.75</item>
     </style>
 </resources>

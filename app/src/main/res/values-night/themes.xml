@@ -1,7 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Mismo tema en modo noche — la app ya es dark-first -->
     <style name="Base.Theme.AxFGymNet" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">#071B2F</item>
-        <item name="colorPrimary">#F26A21</item>
+        <item name="android:windowBackground">@color/axf_bg_deep</item>
+        <item name="colorPrimary">@color/axf_orange</item>
+        <item name="colorOnPrimary">@color/axf_text_primary</item>
+        <item name="colorSurface">@color/axf_bg_card</item>
+        <item name="colorOnSurface">@color/axf_text_primary</item>
+        <item name="android:textColorPrimary">@color/axf_text_primary</item>
+        <item name="android:textColorSecondary">@color/axf_text_secondary</item>
     </style>
     <style name="Theme.AxFGymNet" parent="Base.Theme.AxFGymNet" />
 </resources>

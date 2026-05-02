@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_rutina.xml — Tarjeta de rutina
+    ANTES: cardBackgroundColor #FFFFFF, texto oscuro → inconsistente con app dark
+    AHORA: axf_bg_card, texto claro, paleta unificada
+-->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/axf_bg_card"
     android:layout_marginBottom="14dp">
 
     <LinearLayout
@@ -21,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="28/03/2026"
-            android:textColor="#F26A21"
+            android:textColor="@color/axf_orange"
             android:textSize="12sp"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
@@ -32,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Entrenador: --"
-            android:textColor="#071B2F"
+            android:textColor="@color/axf_text_primary"
             android:textSize="14sp"
             android:textStyle="bold"
             android:layout_marginBottom="6dp"/>
@@ -43,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Jalón al pecho, Press banca..."
-            android:textColor="#666666"
+            android:textColor="@color/axf_text_secondary"
             android:textSize="13sp"
             android:layout_marginBottom="14dp"/>
 
@@ -53,10 +58,11 @@
             android:layout_width="match_parent"
             android:layout_height="46dp"
             android:text="Empezar Rutina"
-            android:backgroundTint="#F26A21"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/axf_orange"
+            android:textColor="@color/axf_text_primary"
             android:textStyle="bold"
-            android:textSize="15sp"/>
+            android:textSize="15sp"
+            android:stateListAnimator="@null"/>
 
     </LinearLayout>
 

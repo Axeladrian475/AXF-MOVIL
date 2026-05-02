@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    activity_chat_lista.xml — Lista de conversaciones
+    ANTES: fondo #F2F2F2, emoji 💬 en el título
+    AHORA: fondo axf_bg_deep, sin emojis, paleta unificada
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F2F2F2">
+    android:background="@color/axf_bg_deep">
 
-    <!-- HEADER -->
+    <!-- ── HEADER ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#071B2F"
+        android:background="@color/axf_bg_primary"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
@@ -17,36 +22,39 @@
         android:paddingTop="48dp"
         android:paddingBottom="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="←"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
+        <ImageView
             android:id="@+id/btnVolverChat"
-            android:paddingEnd="12dp"/>
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Volver"
+            android:padding="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="💬  Mensajes"
-            android:textColor="#FFFFFF"
+            android:text="Mensajes"
+            android:textColor="@color/axf_text_primary"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
+
     <TextView
         android:id="@+id/tvSubtituloChat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tus conversaciones"
-        android:textColor="#555555"
+        android:textColor="@color/axf_text_secondary"
         android:textSize="13sp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="12dp"
         android:paddingBottom="4dp"/>
-    <!-- LISTA DE CONVERSACIONES -->
+
+    <!-- ── LISTA DE CONVERSACIONES ── -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvConversaciones"
         android:layout_width="match_parent"

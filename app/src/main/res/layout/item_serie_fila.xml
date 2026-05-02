@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_serie_fila.xml — Fila de serie en ejercicio
+    ANTES: fondo #1C1C1E
+    AHORA: axf_entreno_card — paleta unificada
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -7,7 +12,7 @@
     android:gravity="center_vertical"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:background="#1C1C1E">
+    android:background="@color/axf_entreno_card">
 
     <!-- Número de serie -->
     <TextView
@@ -15,7 +20,7 @@
         android:layout_width="36dp"
         android:layout_height="wrap_content"
         android:text="1"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/axf_text_primary"
         android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"/>
@@ -27,7 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="55kg x 7"
-        android:textColor="#555555"
+        android:textColor="@color/axf_text_tertiary"
         android:textSize="13sp"/>
 
     <!-- Campo KG -->
@@ -37,8 +42,8 @@
         android:layout_height="38dp"
         android:hint="kg"
         android:inputType="numberDecimal"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#555555"
+        android:textColor="@color/axf_text_primary"
+        android:textColorHint="@color/axf_text_hint"
         android:textSize="14sp"
         android:gravity="center"
         android:background="@drawable/bg_input_serie"
@@ -51,8 +56,8 @@
         android:layout_height="38dp"
         android:hint="reps"
         android:inputType="number"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#555555"
+        android:textColor="@color/axf_text_primary"
+        android:textColorHint="@color/axf_text_hint"
         android:textSize="14sp"
         android:gravity="center"
         android:background="@drawable/bg_input_serie"

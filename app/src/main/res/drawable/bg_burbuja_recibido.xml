@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- bg_burbuja_recibido.xml — Burbuja de mensaje recibido
+     ANTES: #FFFFFF (blanco, inconsistente en app dark)
+     AHORA: axf_bg_surface (#1A2A3F) — paleta oscura unificada -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#FFFFFF"/>
+    <solid android:color="@color/axf_bg_surface"/>
     <corners
         android:topLeftRadius="14dp"
         android:topRightRadius="14dp"
