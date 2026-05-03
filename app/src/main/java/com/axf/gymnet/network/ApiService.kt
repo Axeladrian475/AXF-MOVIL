@@ -21,11 +21,15 @@ import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.data.SucursalItem
 import com.axf.gymnet.data.SumarseReporteResponse
 import com.axf.gymnet.data.SuscripcionResponse
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -125,7 +129,21 @@ interface ApiService {
         @Path("id_personal") idPersonal: Int
     ): Response<AtencionPreviaResponse>
 
-    /** Crear un nuevo reporte (incidencia o de personal) */
+    /** Crear un nuevo reporte (incidencia o de personal) con soporte para foto */
+    @Multipart
+    @POST("api/reportes/crear")
+    suspend fun crearReporteMultipart(
+        @Header("Authorization") token: String,
+        @Part("id_sucursal") id_sucursal: RequestBody,
+        @Part("categoria") categoria: RequestBody,
+        @Part("descripcion") descripcion: RequestBody,
+        @Part("es_privado") es_privado: RequestBody,
+        @Part("id_personal_reportado") id_personal_reportado: RequestBody?,
+        @Part("sobre_atencion_previa") sobre_atencion_previa: RequestBody?,
+        @Part foto: MultipartBody.Part?
+    ): Response<CrearReporteResponse>
+
+    /** Crear un nuevo reporte (incidencia o de personal) - Legacy JSON */
     @POST("api/reportes/crear")
     suspend fun crearReporte(
         @Header("Authorization") token: String,

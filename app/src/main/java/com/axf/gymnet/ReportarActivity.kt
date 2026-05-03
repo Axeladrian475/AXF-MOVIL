@@ -1,28 +1,39 @@
 package com.axf.gymnet
 
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.axf.gymnet.data.CrearReporteRequest
 import com.axf.gymnet.data.PersonalItem
 import com.axf.gymnet.data.SucursalItem
 import com.axf.gymnet.network.RetrofitClient
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+import java.io.FileOutputStream
 
 class ReportarActivity : AppCompatActivity() {
 
@@ -43,6 +54,12 @@ class ReportarActivity : AppCompatActivity() {
     private lateinit var cbSobreAtencion: CheckBox
     private lateinit var btnEnviarReporte: Button
     private lateinit var tvEstadoEnvio: TextView
+
+    // Foto
+    private lateinit var btnSeleccionarFoto: View
+    private lateinit var ivFotoPreview: ImageView
+    private lateinit var tvFotoStatus: TextView
+    private var fotoUri: Uri? = null
 
     // TAB 1 — Públicos
     private lateinit var layoutReportesPublicos: LinearLayout
@@ -74,6 +91,18 @@ class ReportarActivity : AppCompatActivity() {
         "Problema_Limpieza", "Reporte_Personal", "Otro"
     )
 
+    // Launcher para seleccionar fotos (Photo Picker moderno)
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            fotoUri = uri
+            ivFotoPreview.setImageURI(uri)
+            ivFotoPreview.alpha = 1.0f
+            ivFotoPreview.setPadding(0, 0, 0, 0)
+            tvFotoStatus.text = "Foto seleccionada"
+            tvFotoStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reportar)
@@ -84,14 +113,12 @@ class ReportarActivity : AppCompatActivity() {
         setupTabs()
         setupBtnVolver()
         setupCategoriasSpinner()
+        setupFotoPicker()
         setupEnviarReporte()
 
-        // Cargar sucursales → cuando terminen, puebla ambos spinners y carga datos
         cargarSucursales()
         cargarMisReportes()
     }
-
-    // ── Bind ──────────────────────────────────────────────────────────────────
 
     private fun bindViews() {
         tabLayout = findViewById(R.id.tabLayoutReportes)
@@ -107,6 +134,10 @@ class ReportarActivity : AppCompatActivity() {
         cbSobreAtencion      = findViewById(R.id.cbSobreAtencion)
         btnEnviarReporte     = findViewById(R.id.btnEnviarReporte)
         tvEstadoEnvio        = findViewById(R.id.tvEstadoEnvio)
+
+        btnSeleccionarFoto   = findViewById(R.id.btnSeleccionarFoto)
+        ivFotoPreview        = findViewById(R.id.ivFotoPreview)
+        tvFotoStatus         = findViewById(R.id.tvFotoStatus)
 
         layoutReportesPublicos  = findViewById(R.id.layoutReportesPublicos)
         spinnerSucursalPublicos = findViewById(R.id.spinnerSucursalPublicos)
@@ -127,7 +158,11 @@ class ReportarActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnVolverReportar).setOnClickListener { finish() }
     }
 
-    // ── Tabs ──────────────────────────────────────────────────────────────────
+    private fun setupFotoPicker() {
+        btnSeleccionarFoto.setOnClickListener {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+    }
 
     private fun setupTabs() {
         mostrarTab(0)
@@ -135,7 +170,6 @@ class ReportarActivity : AppCompatActivity() {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 tabActual = tab.position
                 mostrarTab(tab.position)
-                // Al entrar al tab Públicos con sucursal ya cargada, recargar
                 if (tab.position == 1 && sucursales.isNotEmpty()) {
                     cargarReportesPublicos(sucursales[spinnerSucursalPublicos.selectedItemPosition].id_sucursal)
                 }
@@ -151,8 +185,6 @@ class ReportarActivity : AppCompatActivity() {
         layoutMisReportes.visibility      = if (pos == 2) View.VISIBLE else View.GONE
     }
 
-    // ── Sucursales ────────────────────────────────────────────────────────────
-
     private fun cargarSucursales() {
         lifecycleScope.launch {
             try {
@@ -162,15 +194,10 @@ class ReportarActivity : AppCompatActivity() {
                     if (sucursales.isNotEmpty()) {
                         poblarSpinnerSucursal()
                         poblarSpinnerSucursalPublicos()
-                        // Auto-cargar reportes públicos de la primera sucursal
                         cargarReportesPublicos(sucursales[0].id_sucursal)
                     }
-                } else {
-                    Toast.makeText(this@ReportarActivity, "No se pudieron cargar las sucursales", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(this@ReportarActivity, "Sin conexión al servidor", Toast.LENGTH_SHORT).show()
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -180,7 +207,6 @@ class ReportarActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerSucursal.adapter = adapter
 
-        // Seleccionar la sucursal del suscriptor por defecto si está en la lista
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         val sucursalIdUsuario = prefs.getInt("sucursalId", -1)
         val indexUsuario = sucursales.indexOfFirst { it.id_sucursal == sucursalIdUsuario }
@@ -193,11 +219,8 @@ class ReportarActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(p: AdapterView<*>) {}
         }
-        // Forzar el ID inicial
         if (sucursales.isNotEmpty()) {
-            sucursalSeleccionadaId = sucursales[
-                if (indexUsuario >= 0) indexUsuario else 0
-            ].id_sucursal
+            sucursalSeleccionadaId = sucursales[if (indexUsuario >= 0) indexUsuario else 0].id_sucursal
         }
     }
 
@@ -214,8 +237,6 @@ class ReportarActivity : AppCompatActivity() {
             override fun onNothingSelected(p: AdapterView<*>) {}
         }
     }
-
-    // ── Categorías ────────────────────────────────────────────────────────────
 
     private fun setupCategoriasSpinner() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categorias)
@@ -236,8 +257,6 @@ class ReportarActivity : AppCompatActivity() {
         }
     }
 
-    // ── Personal ──────────────────────────────────────────────────────────────
-
     private fun cargarPersonal(idSucursal: Int) {
         lifecycleScope.launch {
             try {
@@ -251,9 +270,7 @@ class ReportarActivity : AppCompatActivity() {
     }
 
     private fun poblarSpinnerPersonal() {
-        val nombres = personalLista.map {
-            "${it.nombres} ${it.apellido_paterno} (${it.puesto.replace('_', ' ')})"
-        }
+        val nombres = personalLista.map { "${it.nombres} ${it.apellido_paterno} (${it.puesto.replace('_', ' ')})" }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, nombres)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerPersonal.adapter = adapter
@@ -280,21 +297,11 @@ class ReportarActivity : AppCompatActivity() {
         }
     }
 
-    // ── Enviar reporte ────────────────────────────────────────────────────────
-
     private fun setupEnviarReporte() {
         btnEnviarReporte.setOnClickListener {
             val descripcion = etDescripcion.text?.toString()?.trim() ?: ""
-            tvEstadoEnvio.visibility = View.GONE
-
-            if (sucursalSeleccionadaId == -1) {
-                tvEstadoEnvio.text = "⚠ Selecciona una sucursal"
-                tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-                tvEstadoEnvio.visibility = View.VISIBLE
-                return@setOnClickListener
-            }
-            if (descripcion.isEmpty()) {
-                tvEstadoEnvio.text = "⚠ Escribe una descripción del problema"
+            if (sucursalSeleccionadaId == -1 || descripcion.isEmpty()) {
+                tvEstadoEnvio.text = "⚠ Completa los campos obligatorios"
                 tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
                 tvEstadoEnvio.visibility = View.VISIBLE
                 return@setOnClickListener
@@ -304,29 +311,46 @@ class ReportarActivity : AppCompatActivity() {
             val categoriaApi = categoriasApi[catPos]
             val esPersonal = (catPos == 3)
 
-            val request = CrearReporteRequest(
-                id_sucursal           = sucursalSeleccionadaId,
-                categoria             = categoriaApi,
-                descripcion           = descripcion,
-                es_privado            = cbPrivado.isChecked,
-                id_personal_reportado = if (esPersonal && personalSeleccionadoId != -1) personalSeleccionadoId else null,
-                sobre_atencion_previa = if (esPersonal && tuvoAtencionPrevia) cbSobreAtencion.isChecked else null
-            )
+            // Preparar partes Multipart
+            val idSucursalBody = sucursalSeleccionadaId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            val categoriaBody = categoriaApi.toRequestBody("text/plain".toMediaTypeOrNull())
+            val descripcionBody = descripcion.toRequestBody("text/plain".toMediaTypeOrNull())
+            val esPrivadoBody = cbPrivado.isChecked.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            
+            val idPersonalBody = if (esPersonal && personalSeleccionadoId != -1) 
+                personalSeleccionadoId.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
+            val sobreAtencionBody = if (esPersonal && tuvoAtencionPrevia) 
+                cbSobreAtencion.isChecked.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
+
+            var fotoPart: MultipartBody.Part? = null
+            fotoUri?.let { uri ->
+                try {
+                    val file = uriToFile(uri)
+                    val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                    fotoPart = MultipartBody.Part.createFormData("foto", file.name, requestFile)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error al procesar la imagen", Toast.LENGTH_SHORT).show()
+                }
+            }
 
             btnEnviarReporte.isEnabled = false
+            tvEstadoEnvio.text = "Enviando reporte..."
+            tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+            tvEstadoEnvio.visibility = View.VISIBLE
 
             lifecycleScope.launch {
                 try {
-                    val res = RetrofitClient.instance.crearReporte("Bearer $token", request)
+                    val res = RetrofitClient.instance.crearReporteMultipart(
+                        "Bearer $token", idSucursalBody, categoriaBody, descripcionBody,
+                        esPrivadoBody, idPersonalBody, sobreAtencionBody, fotoPart
+                    )
                     if (res.isSuccessful && res.body()?.success == true) {
                         tvEstadoEnvio.text = "✅ Reporte enviado correctamente"
                         tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_green_dark))
-                        etDescripcion.setText("")
-                        cbPrivado.isChecked = false
-                        cbSobreAtencion.isChecked = false
+                        resetForm()
                         cargarMisReportes()
                     } else {
-                        val msg = res.body()?.message ?: "Error al enviar el reporte"
+                        val msg = res.body()?.message ?: "Error al enviar"
                         tvEstadoEnvio.text = "❌ $msg"
                         tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_red_dark))
                     }
@@ -334,44 +358,58 @@ class ReportarActivity : AppCompatActivity() {
                     tvEstadoEnvio.text = "❌ Sin conexión: ${e.message}"
                     tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_red_dark))
                 } finally {
-                    tvEstadoEnvio.visibility = View.VISIBLE
                     btnEnviarReporte.isEnabled = true
                 }
             }
         }
     }
 
-    // ── Reportes públicos ─────────────────────────────────────────────────────
+    private fun resetForm() {
+        etDescripcion.setText("")
+        cbPrivado.isChecked = false
+        cbSobreAtencion.isChecked = false
+        fotoUri = null
+        ivFotoPreview.setImageResource(R.drawable.ic_fire)
+        ivFotoPreview.alpha = 0.5f
+        ivFotoPreview.setPadding(40, 40, 40, 40)
+        tvFotoStatus.text = "Toca para subir una foto"
+        tvFotoStatus.setTextColor(ContextCompat.getColor(this, R.color.axf_text_secondary))
+    }
+
+    private fun uriToFile(uri: Uri): File {
+        val inputStream = contentResolver.openInputStream(uri)
+        val tempFile = File(cacheDir, getFileName(uri))
+        val outputStream = FileOutputStream(tempFile)
+        inputStream?.copyTo(outputStream)
+        inputStream?.close()
+        outputStream.close()
+        return tempFile
+    }
+
+    private fun getFileName(uri: Uri): String {
+        var name = "temp_image.jpg"
+        contentResolver.query(uri, null, null, null, null)?.use {
+            if (it.moveToFirst()) {
+                val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (index != -1) name = it.getString(index)
+            }
+        }
+        return name
+    }
 
     private fun cargarReportesPublicos(idSucursal: Int) {
         pbPublicos.visibility = View.VISIBLE
-        tvSinReportes.visibility = View.GONE
-        rvReportesPublicos.visibility = View.GONE
-
         lifecycleScope.launch {
             try {
                 val res = RetrofitClient.instance.getReportesPublicos("Bearer $token", idSucursal)
                 pbPublicos.visibility = View.GONE
                 if (res.isSuccessful) {
                     val lista = res.body()?.reportes ?: emptyList()
-                    if (lista.isEmpty()) {
-                        tvSinReportes.text = "No hay reportes públicos activos en esta sucursal."
-                        tvSinReportes.visibility = View.VISIBLE
-                    } else {
-                        rvReportesPublicos.visibility = View.VISIBLE
-                        rvReportesPublicos.adapter = ReportesPublicosAdapter(lista) { idReporte ->
-                            sumarseReporte(idReporte)
-                        }
-                    }
-                } else {
-                    tvSinReportes.text = "Error al cargar reportes (${res.code()})"
-                    tvSinReportes.visibility = View.VISIBLE
+                    tvSinReportes.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
+                    rvReportesPublicos.visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
+                    rvReportesPublicos.adapter = ReportesPublicosAdapter(lista) { id -> sumarseReporte(id) }
                 }
-            } catch (e: Exception) {
-                pbPublicos.visibility = View.GONE
-                tvSinReportes.text = "Sin conexión: ${e.message}"
-                tvSinReportes.visibility = View.VISIBLE
-            }
+            } catch (_: Exception) { pbPublicos.visibility = View.GONE }
         }
     }
 
@@ -380,44 +418,24 @@ class ReportarActivity : AppCompatActivity() {
             try {
                 val res = RetrofitClient.instance.sumarseReporte("Bearer $token", idReporte)
                 Toast.makeText(this@ReportarActivity, res.body()?.message ?: "OK", Toast.LENGTH_SHORT).show()
-                if (sucursales.isNotEmpty()) {
-                    cargarReportesPublicos(sucursales[spinnerSucursalPublicos.selectedItemPosition].id_sucursal)
-                }
-            } catch (_: Exception) {
-                Toast.makeText(this@ReportarActivity, "Error de red", Toast.LENGTH_SHORT).show()
-            }
+                cargarReportesPublicos(sucursales[spinnerSucursalPublicos.selectedItemPosition].id_sucursal)
+            } catch (_: Exception) {}
         }
     }
 
-    // ── Mis reportes ──────────────────────────────────────────────────────────
-
     private fun cargarMisReportes() {
         pbMisReportes.visibility = View.VISIBLE
-        tvSinMisReportes.visibility = View.GONE
-        rvMisReportes.visibility = View.GONE
-
         lifecycleScope.launch {
             try {
                 val res = RetrofitClient.instance.getMisReportes("Bearer $token")
                 pbMisReportes.visibility = View.GONE
                 if (res.isSuccessful) {
                     val lista = res.body()?.reportes ?: emptyList()
-                    if (lista.isEmpty()) {
-                        tvSinMisReportes.text = "Aún no has enviado ningún reporte."
-                        tvSinMisReportes.visibility = View.VISIBLE
-                    } else {
-                        rvMisReportes.visibility = View.VISIBLE
-                        rvMisReportes.adapter = MisReportesAdapter(lista)
-                    }
-                } else {
-                    tvSinMisReportes.text = "Error al cargar reportes (${res.code()})"
-                    tvSinMisReportes.visibility = View.VISIBLE
+                    tvSinMisReportes.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
+                    rvMisReportes.visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
+                    rvMisReportes.adapter = MisReportesAdapter(lista)
                 }
-            } catch (e: Exception) {
-                pbMisReportes.visibility = View.GONE
-                tvSinMisReportes.text = "Sin conexión: ${e.message}"
-                tvSinMisReportes.visibility = View.VISIBLE
-            }
+            } catch (_: Exception) { pbMisReportes.visibility = View.GONE }
         }
     }
 }
