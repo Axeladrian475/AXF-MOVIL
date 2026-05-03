@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     item_rutina.xml — Tarjeta de rutina
-    ANTES: cardBackgroundColor #FFFFFF, texto oscuro → inconsistente con app dark
-    AHORA: axf_bg_card, texto claro, paleta unificada
+    Muestra el nombre del grupo muscular a la izquierda y la fecha a la derecha.
 -->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,16 +19,40 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Fecha -->
-        <TextView
-            android:id="@+id/tvRutinaFecha"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="28/03/2026"
-            android:textColor="@color/axf_orange"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <!-- Nombre de Grupo Muscular (Ahora a la izquierda como título principal) -->
+            <TextView
+                android:id="@+id/tvRutinaNombre"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pecho y Espalda"
+                android:textColor="@color/axf_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:background="@color/axf_bg_surface"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
+
+            <!-- Fecha (Ahora a la derecha) -->
+            <TextView
+                android:id="@+id/tvRutinaFecha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="28/03/2026"
+                android:textColor="@color/axf_orange"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginStart="12dp"/>
+        </LinearLayout>
 
         <!-- Entrenador -->
         <TextView
@@ -37,9 +60,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Entrenador: --"
-            android:textColor="@color/axf_text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"
+            android:textColor="@color/axf_text_secondary"
+            android:textSize="13sp"
             android:layout_marginBottom="6dp"/>
 
         <!-- Ejercicios resumidos -->
@@ -49,7 +71,7 @@
             android:layout_height="wrap_content"
             android:text="Jalón al pecho, Press banca..."
             android:textColor="@color/axf_text_secondary"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:layout_marginBottom="14dp"/>
 
         <!-- Botón empezar -->

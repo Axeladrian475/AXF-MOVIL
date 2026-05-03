@@ -4,6 +4,7 @@ package com.axf.gymnet.data
 
 data class RutinaResponse(
     val id_rutina: Int,
+    val nombre: String?,            // Ej: "Pecho y Espalda", "Pierna Completa"
     val notas_pdf: String?,
     val creado_en: String,
     val entrenador: String,

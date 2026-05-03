@@ -6,12 +6,12 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.network.RetrofitClient
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -50,6 +50,7 @@ class RutinasActivity : AppCompatActivity() {
                     if (rutinas.isEmpty()) {
                         tvVacio.visibility = View.VISIBLE
                     } else {
+                        containerList.removeAllViews()
                         rutinas.forEach { rutina ->
                             containerList.addView(crearTarjetaRutina(rutina))
                         }
@@ -71,12 +72,19 @@ class RutinasActivity : AppCompatActivity() {
         val card = inflater.inflate(R.layout.item_rutina, null) as CardView
 
         val tvFecha      = card.findViewById<TextView>(R.id.tvRutinaFecha)
+        val tvNombre     = card.findViewById<TextView>(R.id.tvRutinaNombre)
         val tvEntrenador = card.findViewById<TextView>(R.id.tvRutinaEntrenador)
         val tvEjercicios = card.findViewById<TextView>(R.id.tvRutinaEjercicios)
         val btnEmpezar   = card.findViewById<View>(R.id.btnEmpezarRutina)
 
-        // Formatear fecha — soporta todos los formatos que puede devolver MySQL/Node:
-        // "2026-03-28T00:00:00.000Z", "2026-03-28T00:00:00Z", "2026-03-28 00:00:00", "2026-03-28"
+        // Nombre de la rutina (Grupo Muscular) - Formato: "Rutina de [Nombre]"
+        tvNombre.text = if (!rutina.nombre.isNullOrBlank()) {
+            "Rutina de ${rutina.nombre}"
+        } else {
+            "Rutina de Entrenamiento"
+        }
+
+        // Formatear fecha
         val sdfOut = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val formatos = listOf(
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
@@ -98,9 +106,7 @@ class RutinasActivity : AppCompatActivity() {
         btnEmpezar.setOnClickListener {
             val intent = Intent(this, EntrenamientoActivity::class.java)
             intent.putExtra("rutina_id", rutina.id_rutina)
-            // Serializar la rutina como JSON para pasarla a la siguiente activity
-            val gson = com.google.gson.Gson()
-            intent.putExtra("rutina_json", gson.toJson(rutina))
+            intent.putExtra("rutina_json", Gson().toJson(rutina))
             startActivity(intent)
         }
 

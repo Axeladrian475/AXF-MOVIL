@@ -26,7 +26,9 @@ import com.axf.gymnet.data.SucursalItem
 import com.axf.gymnet.network.RetrofitClient
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -316,29 +318,48 @@ class ReportarActivity : AppCompatActivity() {
             val categoriaBody = categoriaApi.toRequestBody("text/plain".toMediaTypeOrNull())
             val descripcionBody = descripcion.toRequestBody("text/plain".toMediaTypeOrNull())
             val esPrivadoBody = cbPrivado.isChecked.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-            
-            val idPersonalBody = if (esPersonal && personalSeleccionadoId != -1) 
-                personalSeleccionadoId.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
-            val sobreAtencionBody = if (esPersonal && tuvoAtencionPrevia) 
-                cbSobreAtencion.isChecked.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
 
-            var fotoPart: MultipartBody.Part? = null
-            fotoUri?.let { uri ->
-                try {
-                    val file = uriToFile(uri)
-                    val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                    fotoPart = MultipartBody.Part.createFormData("foto", file.name, requestFile)
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Error al procesar la imagen", Toast.LENGTH_SHORT).show()
-                }
-            }
+            val idPersonalBody = if (esPersonal && personalSeleccionadoId != -1)
+                personalSeleccionadoId.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
+            val sobreAtencionBody = if (esPersonal && tuvoAtencionPrevia)
+                cbSobreAtencion.isChecked.toString().toRequestBody("text/plain".toMediaTypeOrNull()) else null
 
             btnEnviarReporte.isEnabled = false
             tvEstadoEnvio.text = "Enviando reporte..."
             tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
             tvEstadoEnvio.visibility = View.VISIBLE
 
+            // Capturar fotoUri antes de entrar a la coroutine
+            val fotoUriSnapshot = fotoUri
+
             lifecycleScope.launch {
+                // Procesar la imagen DENTRO de la coroutine (Dispatchers.IO implícito por lifecycleScope)
+                var fotoPart: MultipartBody.Part? = null
+                fotoUriSnapshot?.let { uri ->
+                    try {
+                        val file = uriToFile(uri)
+                        if (file.exists() && file.length() > 0) {
+                            // Detectar tipo MIME real a partir de la extensión
+                            val ext = file.name.substringAfterLast('.', "jpg").lowercase()
+                            val mimeType = when (ext) {
+                                "png"  -> "image/png"
+                                "gif"  -> "image/gif"
+                                "webp" -> "image/webp"
+                                else   -> "image/jpeg"
+                            }
+                            val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
+                            fotoPart = MultipartBody.Part.createFormData("foto", file.name, requestFile)
+                        }
+                    } catch (e: Exception) {
+                        // No bloquear el envío del reporte si falla la foto
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            Toast.makeText(this@ReportarActivity,
+                                "No se pudo adjuntar la foto: ${e.message}",
+                                Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
                 try {
                     val res = RetrofitClient.instance.crearReporteMultipart(
                         "Bearer $token", idSucursalBody, categoriaBody, descripcionBody,
@@ -377,12 +398,16 @@ class ReportarActivity : AppCompatActivity() {
     }
 
     private fun uriToFile(uri: Uri): File {
+        val fileName = getFileName(uri)
+        val tempFile = File(cacheDir, fileName)
         val inputStream = contentResolver.openInputStream(uri)
-        val tempFile = File(cacheDir, getFileName(uri))
-        val outputStream = FileOutputStream(tempFile)
-        inputStream?.copyTo(outputStream)
-        inputStream?.close()
-        outputStream.close()
+            ?: throw IllegalStateException("No se pudo abrir la imagen: URI inaccesible")
+        tempFile.outputStream().use { output ->
+            inputStream.use { input ->
+                input.copyTo(output)
+            }
+        }
+        if (tempFile.length() == 0L) throw IllegalStateException("La imagen está vacía")
         return tempFile
     }
 
