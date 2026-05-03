@@ -60,7 +60,7 @@ data class SumarseReporteResponse(
 // ── Verificar atención previa ─────────────────────────────────────────────────
 data class AtencionPreviaResponse(
     val success: Boolean,
-    val tuvo_atencion: Boolean
+    val tuvo_atencion: Int   // MySQL tinyint: 0 ó 1
 )
 
 // ── Mis reportes ──────────────────────────────────────────────────────────────

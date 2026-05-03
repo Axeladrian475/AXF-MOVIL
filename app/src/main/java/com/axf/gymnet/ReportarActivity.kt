@@ -12,6 +12,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -123,7 +124,7 @@ class ReportarActivity : AppCompatActivity() {
     }
 
     private fun setupBtnVolver() {
-        findViewById<TextView>(R.id.btnVolverReportar).setOnClickListener { finish() }
+        findViewById<View>(R.id.btnVolverReportar).setOnClickListener { finish() }
     }
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -258,8 +259,10 @@ class ReportarActivity : AppCompatActivity() {
         spinnerPersonal.adapter = adapter
         spinnerPersonal.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>, v: View?, pos: Int, id: Long) {
-                personalSeleccionadoId = personalLista[pos].id_personal
-                verificarAtencionPrevia(personalSeleccionadoId)
+                if (pos in personalLista.indices) {
+                    personalSeleccionadoId = personalLista[pos].id_personal
+                    verificarAtencionPrevia(personalSeleccionadoId)
+                }
             }
             override fun onNothingSelected(p: AdapterView<*>) {}
         }
@@ -270,7 +273,7 @@ class ReportarActivity : AppCompatActivity() {
             try {
                 val res = RetrofitClient.instance.verificarAtencionPrevia("Bearer $token", idPersonal)
                 if (res.isSuccessful) {
-                    tuvoAtencionPrevia = res.body()?.tuvo_atencion ?: false
+                    tuvoAtencionPrevia = (res.body()?.tuvo_atencion ?: 0) != 0
                     layoutAtencionPrevia.visibility = if (tuvoAtencionPrevia) View.VISIBLE else View.GONE
                 }
             } catch (_: Exception) {}
@@ -286,13 +289,13 @@ class ReportarActivity : AppCompatActivity() {
 
             if (sucursalSeleccionadaId == -1) {
                 tvEstadoEnvio.text = "⚠ Selecciona una sucursal"
-                tvEstadoEnvio.setTextColor(getColor(android.R.color.holo_orange_dark))
+                tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
                 tvEstadoEnvio.visibility = View.VISIBLE
                 return@setOnClickListener
             }
             if (descripcion.isEmpty()) {
                 tvEstadoEnvio.text = "⚠ Escribe una descripción del problema"
-                tvEstadoEnvio.setTextColor(getColor(android.R.color.holo_orange_dark))
+                tvEstadoEnvio.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
                 tvEstadoEnvio.visibility = View.VISIBLE
                 return@setOnClickListener
             }
@@ -317,7 +320,7 @@ class ReportarActivity : AppCompatActivity() {
                     val res = RetrofitClient.instance.crearReporte("Bearer $token", request)
                     if (res.isSuccessful && res.body()?.success == true) {
                         tvEstadoEnvio.text = "✅ Reporte enviado correctamente"
-                        tvEstadoEnvio.setTextColor(getColor(android.R.color.holo_green_dark))
+                        tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_green_dark))
                         etDescripcion.setText("")
                         cbPrivado.isChecked = false
                         cbSobreAtencion.isChecked = false
@@ -325,11 +328,11 @@ class ReportarActivity : AppCompatActivity() {
                     } else {
                         val msg = res.body()?.message ?: "Error al enviar el reporte"
                         tvEstadoEnvio.text = "❌ $msg"
-                        tvEstadoEnvio.setTextColor(getColor(android.R.color.holo_red_dark))
+                        tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_red_dark))
                     }
                 } catch (e: Exception) {
                     tvEstadoEnvio.text = "❌ Sin conexión: ${e.message}"
-                    tvEstadoEnvio.setTextColor(getColor(android.R.color.holo_red_dark))
+                    tvEstadoEnvio.setTextColor(ContextCompat.getColor(this@ReportarActivity, android.R.color.holo_red_dark))
                 } finally {
                     tvEstadoEnvio.visibility = View.VISIBLE
                     btnEnviarReporte.isEnabled = true

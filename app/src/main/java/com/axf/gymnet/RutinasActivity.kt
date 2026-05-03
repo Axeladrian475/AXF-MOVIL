@@ -75,15 +75,18 @@ class RutinasActivity : AppCompatActivity() {
         val tvEjercicios = card.findViewById<TextView>(R.id.tvRutinaEjercicios)
         val btnEmpezar   = card.findViewById<View>(R.id.btnEmpezarRutina)
 
-        // Formatear fecha
-        try {
-            val sdfIn  = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            val sdfOut = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val fecha  = sdfIn.parse(rutina.creado_en)
-            tvFecha.text = if (fecha != null) sdfOut.format(fecha) else rutina.creado_en.take(10)
-        } catch (e: Exception) {
-            tvFecha.text = rutina.creado_en.take(10)
-        }
+        // Formatear fecha — soporta todos los formatos que puede devolver MySQL/Node:
+        // "2026-03-28T00:00:00.000Z", "2026-03-28T00:00:00Z", "2026-03-28 00:00:00", "2026-03-28"
+        val sdfOut = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatos = listOf(
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",     Locale.US),
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss",           Locale.US),
+            SimpleDateFormat("yyyy-MM-dd",                    Locale.US)
+        )
+        tvFecha.text = formatos.firstNotNullOfOrNull { fmt ->
+            try { sdfOut.format(fmt.parse(rutina.creado_en)!!) } catch (_: Exception) { null }
+        } ?: rutina.creado_en.take(10)
 
         tvEntrenador.text = "Entrenador: ${rutina.entrenador}"
 
