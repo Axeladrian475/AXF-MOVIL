@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    activity_rutinas.xml — Lista de rutinas
-    ANTES: fondo #F2F2F2 (claro), ImageButton con ic_media_previous
-    AHORA: fondo axf_bg_deep, ic_back, paleta unificada
+    activity_rutinas.xml — Lista de rutinas (REDISEÑO PREMIUM v2)
+    Cambios: header con gradiente visual, badge de conteo, empty-state con ícono,
+    scroll con padding inferior y fondo unificado axf_bg_deep.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -10,36 +10,67 @@
     android:orientation="vertical"
     android:background="@color/axf_bg_deep">
 
-    <!-- ── HEADER ── -->
+    <!-- ── HEADER PREMIUM ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/axf_bg_primary"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="44dp"
-        android:paddingBottom="14dp">
+        android:paddingTop="48dp"
+        android:paddingBottom="20dp">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_back"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Volver"
-            android:padding="8dp"/>
-
-        <TextView
-            android:layout_width="0dp"
+        <!-- Fila: botón back + título -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Mis Rutinas"
-            android:textColor="@color/axf_text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginStart="8dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_back"
+                android:background="@drawable/bg_stats_pill"
+                android:contentDescription="Volver"
+                android:padding="10dp"
+                android:layout_marginEnd="14dp"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MIS RUTINAS"
+                    android:textColor="@color/axf_text_tertiary"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.12"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Entrenamientos asignados"
+                    android:textColor="@color/axf_text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Separador naranja decorativo -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="3dp"
+            android:background="@color/axf_orange"
+            android:layout_marginTop="14dp"/>
 
     </LinearLayout>
 
@@ -49,35 +80,74 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="40dp"
         android:indeterminateTint="@color/axf_orange"
         android:visibility="gone"
         style="?android:attr/progressBarStyle"/>
 
-    <!-- ── VACÍO ── -->
-    <TextView
-        android:id="@+id/tvVacio"
+    <!-- ── ESTADO VACÍO ── -->
+    <LinearLayout
+        android:id="@+id/layoutVacio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No tienes rutinas asignadas aún"
-        android:textColor="@color/axf_text_secondary"
-        android:textSize="15sp"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone"/>
+        android:padding="40dp"
+        android:visibility="gone">
+
+        <!-- Ícono circular decorativo -->
+        <LinearLayout
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_stats_pill"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_nav_entreno"
+                android:tint="@color/axf_orange"
+                android:contentDescription="Sin rutinas"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvVacio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No tienes rutinas asignadas aún"
+            android:textColor="@color/axf_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tu entrenador asignará rutinas personalizadas a tu perfil"
+            android:textColor="@color/axf_text_secondary"
+            android:textSize="13sp"
+            android:gravity="center"/>
+
+    </LinearLayout>
 
     <!-- ── LISTA DE RUTINAS ── -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:id="@+id/containerRutinas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"/>
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="24dp"/>
 
     </ScrollView>
 

@@ -1,58 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    dialog_descanso.xml — Diálogo de descanso entre series
-    ANTES: progressTint #007AFF (azul iOS)
-    AHORA: axf_orange — paleta unificada
+    dialog_descanso.xml — Diálogo de descanso entre series (REDISEÑO PREMIUM v2)
+    Cambios: fondo con esquinas redondeadas (bg_dialog_dark), etiqueta "DESCANSO"
+    con badge naranja, contador más grande y prominente, barra de progreso más gruesa,
+    botón saltar con borde naranja.
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="288dp"
+    android:layout_width="300dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/axf_bg_card"
-    android:padding="28dp">
+    android:background="@drawable/bg_dialog_dark"
+    android:padding="32dp">
 
-    <TextView
+    <!-- Badge etiqueta -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Descanso"
-        android:textColor="@color/axf_text_secondary"
-        android:textSize="13sp"
-        android:textAllCaps="true"
-        android:letterSpacing="0.1"
-        android:layout_marginBottom="16dp"/>
+        android:background="@drawable/bg_muscle_badge"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:layout_marginBottom="24dp">
 
-    <!-- Cuenta atrás grande -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏱  DESCANSO"
+            android:textColor="@color/axf_orange"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"/>
+    </LinearLayout>
+
+    <!-- Cuenta atrás grande — prominente -->
     <TextView
         android:id="@+id/tvCuentaAtras"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="2:00"
         android:textColor="@color/axf_text_primary"
-        android:textSize="64sp"
+        android:textSize="72sp"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="8dp"/>
 
-    <!-- Barra de progreso -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Descansa antes de la siguiente serie"
+        android:textColor="@color/axf_text_secondary"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Barra de progreso más gruesa -->
     <ProgressBar
         android:id="@+id/progressDescanso"
         android:layout_width="match_parent"
-        android:layout_height="6dp"
+        android:layout_height="8dp"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:progressTint="@color/axf_orange"
         android:progressBackgroundTint="@color/axf_bg_surface"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="28dp"/>
 
-    <!-- Botón saltar -->
-    <Button
+    <!-- Botón saltar con borde naranja -->
+    <TextView
         android:id="@+id/btnSaltarDescanso"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:text="Saltar"
-        android:backgroundTint="@color/axf_bg_surface"
-        android:textColor="@color/axf_text_secondary"
-        android:textSize="15sp"
-        android:stateListAnimator="@null"/>
+        android:layout_height="48dp"
+        android:text="Saltar descanso"
+        android:textColor="@color/axf_orange"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/bg_tag_orange"
+        android:clickable="true"
+        android:focusable="true"/>
 
 </LinearLayout>

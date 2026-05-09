@@ -128,7 +128,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         }
 
         // Botón agregar serie
-        v.findViewById<Button>(R.id.btnAgregarSerie).setOnClickListener {
+        v.findViewById<TextView>(R.id.btnAgregarSerie).setOnClickListener {
             val ultima = series.last()
             series.add(SerieState(pesoKg = ultima.pesoKg, reps = ultima.reps))
             tablaSeries.removeAllViews()
@@ -264,7 +264,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         dialogo.show()
 
         val tvCuenta   = dialogo.findViewById<TextView>(R.id.tvCuentaAtras)
-        val btnSaltar  = dialogo.findViewById<Button>(R.id.btnSaltarDescanso)
+        val btnSaltar  = dialogo.findViewById<TextView>(R.id.btnSaltarDescanso)
         val progressBar = dialogo.findViewById<ProgressBar>(R.id.progressDescanso)
 
         progressBar?.max = segundos

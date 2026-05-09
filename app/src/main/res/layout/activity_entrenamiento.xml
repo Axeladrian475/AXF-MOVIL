@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    activity_entrenamiento.xml — Pantalla de entrenamiento activo
-    ANTES: fondo #121212, azules iOS (#007AFF), botón "Terminar" azul
-    AHORA: fondo axf_bg_deep, acento axf_orange unificado
+    activity_entrenamiento.xml — Pantalla de entrenamiento activo (REDISEÑO PREMIUM v2)
+    Cambios: stats bar con pills individuales, header más moderno, FAB de terminar,
+    botones inferiores con mayor contraste y rounding.
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="80dp">
+        android:paddingBottom="100dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,131 +27,176 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/axf_bg_primary"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="44dp"
-                android:paddingBottom="12dp">
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="16dp">
 
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@android:drawable/arrow_down_float"
-                    android:tint="@color/axf_text_secondary"
-                    android:layout_marginEnd="8dp"
-                    android:contentDescription="Minimizar"/>
-
-                <TextView
-                    android:layout_width="0dp"
+                <!-- Fila superior: título + botón terminar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Entreno activo"
-                    android:textColor="@color/axf_text_primary"
-                    android:textSize="17sp"
-                    android:textStyle="bold"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_recent_history"
-                    android:tint="@color/axf_text_secondary"
-                    android:layout_marginEnd="12dp"
-                    android:contentDescription="Tiempo"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/btnTerminar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Terminar"
-                    android:backgroundTint="@color/axf_orange"
-                    android:textColor="@color/axf_text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:stateListAnimator="@null"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SESIÓN ACTIVA"
+                            android:textColor="@color/axf_orange"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.12"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Entreno en curso"
+                            android:textColor="@color/axf_text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnTerminar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Terminar"
+                        android:background="@drawable/bg_btn_orange_rounded"
+                        android:textColor="@color/axf_text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:stateListAnimator="@null"/>
+
+                </LinearLayout>
+
+                <!-- Separador naranja -->
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="3dp"
+                    android:background="@color/axf_orange"
+                    android:layout_marginTop="14dp"/>
 
             </LinearLayout>
 
-            <!-- ── STATS BAR ── -->
+            <!-- ── STATS BAR — 3 pills ── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/axf_bg_card"
                 android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="14dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp">
 
+                <!-- Pill Duración -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:background="@drawable/bg_stats_pill"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_marginEnd="8dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="DURACIÓN"
                         android:textColor="@color/axf_text_tertiary"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.06"/>
+                        android:textSize="9sp"
+                        android:letterSpacing="0.08"/>
+
                     <TextView
                         android:id="@+id/tvDuracion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0s"
+                        android:text="0:00"
                         android:textColor="@color/axf_orange"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"/>
                 </LinearLayout>
 
+                <!-- Pill Volumen -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:background="@drawable/bg_stats_pill"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_marginEnd="8dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="VOLUMEN"
                         android:textColor="@color/axf_text_tertiary"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.06"/>
+                        android:textSize="9sp"
+                        android:letterSpacing="0.08"/>
+
                     <TextView
                         android:id="@+id/tvVolumen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0 kg"
                         android:textColor="@color/axf_text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"/>
                 </LinearLayout>
 
+                <!-- Pill Series -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:background="@drawable/bg_stats_pill"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="SERIES"
                         android:textColor="@color/axf_text_tertiary"
-                        android:textSize="10sp"
-                        android:letterSpacing="0.06"/>
+                        android:textSize="9sp"
+                        android:letterSpacing="0.08"/>
+
                     <TextView
                         android:id="@+id/tvSeriesTotal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
                         android:textColor="@color/axf_text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"/>
                 </LinearLayout>
 
             </LinearLayout>
+
+            <!-- Separador visual entre stats y ejercicios -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#0D1F35"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"/>
 
             <!-- ── EJERCICIOS ── -->
             <LinearLayout
@@ -159,6 +204,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:paddingTop="8dp"/>
 
             <!-- ── BOTONES FINALES ── -->
@@ -168,17 +215,17 @@
                 android:orientation="horizontal"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="16dp">
+                android:paddingTop="12dp"
+                android:paddingBottom="20dp">
 
                 <Button
                     android:id="@+id/btnConfiguracion"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
                     android:text="Configuración"
-                    android:backgroundTint="@color/axf_bg_surface"
-                    android:textColor="@color/axf_text_primary"
+                    android:background="@drawable/bg_stats_pill"
+                    android:textColor="@color/axf_text_secondary"
                     android:textSize="13sp"
                     android:layout_marginEnd="8dp"
                     android:stateListAnimator="@null"/>
@@ -186,10 +233,10 @@
                 <Button
                     android:id="@+id/btnDescartar"
                     android:layout_width="0dp"
-                    android:layout_height="48dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
                     android:text="Descartar entreno"
-                    android:backgroundTint="@color/axf_bg_surface"
+                    android:background="@drawable/bg_stats_pill"
                     android:textColor="@color/axf_error"
                     android:textSize="13sp"
                     android:stateListAnimator="@null"/>

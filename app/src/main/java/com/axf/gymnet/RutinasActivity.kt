@@ -28,13 +28,14 @@ class RutinasActivity : AppCompatActivity() {
         val progressBar   = findViewById<ProgressBar>(R.id.progressRutinas)
         val containerList = findViewById<LinearLayout>(R.id.containerRutinas)
         val tvVacio       = findViewById<TextView>(R.id.tvVacio)
+        val layoutVacio   = findViewById<LinearLayout>(R.id.layoutVacio)
         val btnBack       = findViewById<View>(R.id.btnBack)
 
         btnBack.setOnClickListener { finish() }
 
         if (token.isEmpty()) {
             tvVacio.text = "Sesión no válida"
-            tvVacio.visibility = View.VISIBLE
+            layoutVacio.visibility = View.VISIBLE
             return
         }
 
@@ -48,7 +49,7 @@ class RutinasActivity : AppCompatActivity() {
                 if (resp.isSuccessful) {
                     val rutinas = resp.body() ?: emptyList()
                     if (rutinas.isEmpty()) {
-                        tvVacio.visibility = View.VISIBLE
+                        layoutVacio.visibility = View.VISIBLE
                     } else {
                         containerList.removeAllViews()
                         rutinas.forEach { rutina ->
@@ -57,12 +58,12 @@ class RutinasActivity : AppCompatActivity() {
                     }
                 } else {
                     tvVacio.text = "Error al cargar rutinas"
-                    tvVacio.visibility = View.VISIBLE
+                    layoutVacio.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
                 progressBar.visibility = View.GONE
                 tvVacio.text = "Sin conexión al servidor"
-                tvVacio.visibility = View.VISIBLE
+                layoutVacio.visibility = View.VISIBLE
             }
         }
     }

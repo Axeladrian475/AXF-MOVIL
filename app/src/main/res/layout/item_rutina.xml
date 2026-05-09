@@ -1,91 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    item_rutina.xml — Tarjeta de rutina
-    Muestra el nombre del grupo muscular a la izquierda y la fecha a la derecha.
+    item_rutina.xml — Tarjeta de rutina (REDISEÑO PREMIUM v2)
+    Cambios: accent bar izquierdo naranja, badge de grupo muscular con pill,
+    fila de ejercicios con ícono, botón "Empezar" con radio y sombra.
 -->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
     app:cardBackgroundColor="@color/axf_bg_card"
-    android:layout_marginBottom="14dp">
+    android:layout_marginBottom="16dp">
 
+    <!-- Contenedor con borde izquierdo naranja usando un View overlay -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal">
 
+        <!-- Barra accent naranja izquierda -->
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/axf_orange"/>
+
+        <!-- Contenido principal de la tarjeta -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
 
-            <!-- Nombre de Grupo Muscular (Ahora a la izquierda como título principal) -->
-            <TextView
-                android:id="@+id/tvRutinaNombre"
-                android:layout_width="0dp"
+            <!-- Fila: Badge músculo + Fecha -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Pecho y Espalda"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <!-- Badge grupo muscular -->
+                <TextView
+                    android:id="@+id/tvRutinaNombre"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Pecho y Espalda"
+                    android:textColor="@color/axf_orange"
+                    android:textSize="17sp"
+                    android:textStyle="bold"/>
+
+                <!-- Pill de fecha -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_muscle_badge"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <TextView
+                        android:id="@+id/tvRutinaFecha"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="28/03/2026"
+                        android:textColor="@color/axf_orange"
+                        android:textSize="11sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Entrenador con ícono de persona -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="3dp"
+                    android:background="@color/axf_text_tertiary"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvRutinaEntrenador"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Entrenador: --"
+                    android:textColor="@color/axf_text_secondary"
+                    android:textSize="13sp"/>
+            </LinearLayout>
+
+            <!-- Separador fino -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#1E3050"
+                android:layout_marginBottom="10dp"/>
+
+            <!-- Ejercicios resumidos -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_nav_entreno"
+                    android:tint="@color/axf_text_tertiary"
+                    android:contentDescription="Ejercicios"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvRutinaEjercicios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Jalón al pecho, Press banca..."
+                    android:textColor="@color/axf_text_secondary"
+                    android:textSize="12sp"
+                    android:maxLines="2"
+                    android:ellipsize="end"/>
+            </LinearLayout>
+
+            <!-- Botón empezar — full width, redondeado -->
+            <Button
+                android:id="@+id/btnEmpezarRutina"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="▶  Empezar Rutina"
+                android:background="@drawable/bg_btn_orange_rounded"
                 android:textColor="@color/axf_text_primary"
+                android:textStyle="bold"
                 android:textSize="15sp"
-                android:textStyle="bold"
-                android:background="@color/axf_bg_surface"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"/>
+                android:stateListAnimator="@null"
+                android:letterSpacing="0.02"/>
 
-            <!-- Fecha (Ahora a la derecha) -->
-            <TextView
-                android:id="@+id/tvRutinaFecha"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="28/03/2026"
-                android:textColor="@color/axf_orange"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginStart="12dp"/>
         </LinearLayout>
-
-        <!-- Entrenador -->
-        <TextView
-            android:id="@+id/tvRutinaEntrenador"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Entrenador: --"
-            android:textColor="@color/axf_text_secondary"
-            android:textSize="13sp"
-            android:layout_marginBottom="6dp"/>
-
-        <!-- Ejercicios resumidos -->
-        <TextView
-            android:id="@+id/tvRutinaEjercicios"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Jalón al pecho, Press banca..."
-            android:textColor="@color/axf_text_secondary"
-            android:textSize="12sp"
-            android:layout_marginBottom="14dp"/>
-
-        <!-- Botón empezar -->
-        <Button
-            android:id="@+id/btnEmpezarRutina"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:text="Empezar Rutina"
-            android:backgroundTint="@color/axf_orange"
-            android:textColor="@color/axf_text_primary"
-            android:textStyle="bold"
-            android:textSize="15sp"
-            android:stateListAnimator="@null"/>
-
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
