@@ -89,6 +89,20 @@
                         android:layout_marginStart="5dp"/>
                 </LinearLayout>
 
+                <!-- Botón Cerrar Sesión -->
+                <ImageView
+                    android:id="@+id/btnCerrarSesion"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/ic_logout"
+                    android:contentDescription="Cerrar sesión"
+                    android:tint="@color/axf_text_secondary"
+                    android:padding="6dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_nav_item"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
             </LinearLayout>
 
             <!-- ── CONTENIDO PRINCIPAL ── -->

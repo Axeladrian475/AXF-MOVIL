@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.axf.gymnet.network.RetrofitClient
@@ -100,6 +101,27 @@ class MainActivity : AppCompatActivity() {
                 tvAforo.text = "Aforo actual: próximamente disponible"
                 btnAforo.isEnabled = true
             }, 1000)
+        }
+
+        // ── Botón Cerrar Sesión ──────────────────────────────────────────────
+        findViewById<ImageView>(R.id.btnCerrarSesion).setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Cerrar sesión")
+                .setMessage("¿Estás seguro de que quieres cerrar sesión?")
+                .setPositiveButton("Sí") { _, _ ->
+                    // Limpiar datos guardados
+                    prefs.edit().clear().apply()
+                    // Detener servicio de chat
+                    ChatSocketService.stop(this)
+                    // Ir al Login y limpiar el back stack
+                    val intent = Intent(this, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
         }
     }
 
