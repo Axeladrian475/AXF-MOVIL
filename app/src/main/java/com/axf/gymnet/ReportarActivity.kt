@@ -50,6 +50,7 @@ class ReportarActivity : AppCompatActivity() {
     private lateinit var spinnerCategoria: Spinner
     private lateinit var etDescripcion: TextInputEditText
     private lateinit var cbPrivado: CheckBox
+    private lateinit var layoutPrivado: LinearLayout
     private lateinit var layoutPersonal: LinearLayout
     private lateinit var spinnerPersonal: Spinner
     private lateinit var layoutAtencionPrevia: LinearLayout
@@ -130,6 +131,7 @@ class ReportarActivity : AppCompatActivity() {
         spinnerCategoria     = findViewById(R.id.spinnerCategoria)
         etDescripcion        = findViewById(R.id.etDescripcion)
         cbPrivado            = findViewById(R.id.cbPrivado)
+        layoutPrivado        = findViewById(R.id.layoutPrivado)
         layoutPersonal       = findViewById(R.id.layoutPersonal)
         spinnerPersonal      = findViewById(R.id.spinnerPersonal)
         layoutAtencionPrevia = findViewById(R.id.layoutAtencionPrevia)
@@ -248,11 +250,17 @@ class ReportarActivity : AppCompatActivity() {
             override fun onItemSelected(p: AdapterView<*>, v: View?, pos: Int, id: Long) {
                 val esPersonal = (pos == 3)
                 layoutPersonal.visibility = if (esPersonal) View.VISIBLE else View.GONE
-                if (!esPersonal) {
+                if (esPersonal) {
+                    // Reporte de personal: forzar privado y ocultar opción
+                    cbPrivado.isChecked = true
+                    layoutPrivado.visibility = View.GONE
+                    if (sucursalSeleccionadaId != -1) cargarPersonal(sucursalSeleccionadaId)
+                } else {
+                    // Otra categoría: restaurar visibilidad del checkbox
+                    cbPrivado.isChecked = false
+                    layoutPrivado.visibility = View.VISIBLE
                     layoutAtencionPrevia.visibility = View.GONE
                     cbSobreAtencion.isChecked = false
-                } else if (sucursalSeleccionadaId != -1) {
-                    cargarPersonal(sucursalSeleccionadaId)
                 }
             }
             override fun onNothingSelected(p: AdapterView<*>) {}
@@ -388,6 +396,7 @@ class ReportarActivity : AppCompatActivity() {
     private fun resetForm() {
         etDescripcion.setText("")
         cbPrivado.isChecked = false
+        layoutPrivado.visibility = View.VISIBLE
         cbSobreAtencion.isChecked = false
         fotoUri = null
         ivFotoPreview.setImageResource(R.drawable.ic_fire)
