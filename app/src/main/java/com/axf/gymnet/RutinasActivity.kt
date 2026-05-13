@@ -20,11 +20,15 @@ import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 /**
- * RutinasActivity — muestra las rutinas agrupadas por DÍA/BLOQUE (nombre de rutina).
+ * RutinasActivity — Lista de rutinas agrupadas por nombre de día/bloque.
  *
- * Cada sección = un nombre de rutina (ej: "Pecho y Espalda", "Piernas", "Brazos").
- * Dentro de cada sección, los ejercicios se muestran con imagen, series × reps,
- * descanso y notas técnicas.
+ * Cambios respecto a versión anterior:
+ * - El header muestra el NOMBRE de la rutina (ej: "Pecho", "Piernas") NO "RUTINA #16"
+ * - El sub-label del header dice "RUTINA DEL DÍA" en lugar de "GRUPO MUSCULAR"
+ * - El botón "▶ Empezar Rutina Completa" está UNA VEZ en el header de cada bloque,
+ *   NO en cada ejercicio individual
+ * - Los ejercicios solo muestran info (imagen, nombre, series×reps, descanso, peso)
+ *   sin botón propio
  */
 class RutinasActivity : AppCompatActivity() {
 
@@ -76,35 +80,54 @@ class RutinasActivity : AppCompatActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Renderizado: una sección por rutina (día/bloque)
+    // Renderizado: una sección por rutina (un día/bloque)
+    // Header con nombre del día + botón ÚNICO de empezar
+    // Ejercicios solo informativos, sin botón individual
     // ─────────────────────────────────────────────────────────────────────────
-
     private fun renderizarRutinas(
         container: LinearLayout,
         rutinas: List<RutinaResponse>
     ) {
-        val inflater  = layoutInflater
-        val baseUrl   = RetrofitClient.BASE_URL.trimEnd('/')
+        val inflater = layoutInflater
+        val baseUrl  = RetrofitClient.BASE_URL.trimEnd('/')
 
         for (rutina in rutinas) {
             if (rutina.ejercicios.isEmpty()) continue
 
-            // ── Header de sección (nombre del día / bloque) ────────────────
-            val header = inflater.inflate(R.layout.item_categoria_header, container, false)
-            val nombreDia = rutina.nombre
+            // ── Header del bloque: nombre del día + botón empezar ────────────
+            val header = inflater.inflate(R.layout.item_rutina_header, container, false)
+
+            // Nombre de la rutina (ej: "Pecho", "Piernas", "Brazos") — nunca "RUTINA #16"
+            val nombreRutina = rutina.nombre
                 ?.takeIf { it.isNotBlank() }
                 ?.uppercase()
-                ?: "RUTINA #${rutina.id_rutina}"
-            header.findViewById<TextView>(R.id.tvCategoriaNombre).text = nombreDia
-            header.findViewById<TextView>(R.id.tvCategoriaCount).text =
-                rutina.ejercicios.size.toString()
+                ?: "RUTINA ${rutina.id_rutina}"
+
+            header.findViewById<TextView>(R.id.tvRutinaNombre).text  = nombreRutina
+            header.findViewById<TextView>(R.id.tvRutinaCount).text   =
+                "${rutina.ejercicios.size} ejercicios"
+            header.findViewById<TextView>(R.id.tvRutinaEntrenador).text =
+                "Asignada por: ${rutina.entrenador}"
+
+            // Botón ÚNICO por rutina — lanza EntrenamientoActivity con la rutina completa
+            header.findViewById<Button>(R.id.btnEmpezarRutina).setOnClickListener {
+                val intent = Intent(this, EntrenamientoActivity::class.java)
+                intent.putExtra("rutina_id",   rutina.id_rutina)
+                intent.putExtra("rutina_json", Gson().toJson(rutina))
+                startActivity(intent)
+            }
+
             container.addView(header)
 
-            // ── Tarjeta de cada ejercicio ──────────────────────────────────
+            // ── Tarjetas de ejercicios (solo informativas, sin botón) ────────
             for (ej in rutina.ejercicios.sortedBy { it.orden }) {
                 val card = inflater.inflate(
-                    R.layout.item_ejercicio_categoria, container, false
+                    R.layout.item_ejercicio_info, container, false
                 ) as CardView
+
+                // Número de orden
+                card.findViewById<TextView>(R.id.tvEjOrden).text =
+                    "${ej.orden}"
 
                 // Nombre
                 card.findViewById<TextView>(R.id.tvEjNombre).text = ej.nombre
@@ -115,24 +138,24 @@ class RutinasActivity : AppCompatActivity() {
 
                 // Descanso
                 val tvDescanso = card.findViewById<TextView>(R.id.tvEjDescanso)
-                tvDescanso.text = if ((ej.descanso_seg ?: 0) > 0)
-                    "${ej.descanso_seg}s descanso"
-                else
-                    "Sin descanso fijo"
+                tvDescanso.text = when {
+                    ej.descanso_seg == null || ej.descanso_seg == 0 -> "Sin descanso"
+                    ej.descanso_seg < 60 -> "${ej.descanso_seg}s descanso"
+                    else -> {
+                        val min = ej.descanso_seg / 60
+                        val seg = ej.descanso_seg % 60
+                        if (seg == 0) "${min}min descanso" else "${min}m ${seg}s descanso"
+                    }
+                }
 
                 // Peso sugerido
                 card.findViewById<TextView>(R.id.tvEjPeso).text =
-                    if ((ej.peso_kg ?: 0.0) > 0.0) "· ${ej.peso_kg} kg sugerido"
-                    else "· Peso libre"
-
-                // Origen
-                card.findViewById<TextView>(R.id.tvEjRutinaOrigen).text =
-                    "De: Rutina · ${rutina.entrenador}"
+                    if ((ej.peso_kg ?: 0.0) > 0.0) "· ${ej.peso_kg} kg" else "· Peso libre"
 
                 // Notas técnicas
                 val tvNotas = card.findViewById<TextView>(R.id.tvEjNotas)
                 if (!ej.descripcion_tecnica.isNullOrBlank()) {
-                    tvNotas.text = "📋 ${ej.descripcion_tecnica}"
+                    tvNotas.text      = "📋 ${ej.descripcion_tecnica}"
                     tvNotas.visibility = View.VISIBLE
                 } else {
                     tvNotas.visibility = View.GONE
@@ -158,14 +181,6 @@ class RutinasActivity : AppCompatActivity() {
                 } else {
                     ivImg.visibility      = View.GONE
                     tvFallback.visibility = View.VISIBLE
-                }
-
-                // Botón Empezar — lanza el entrenamiento completo de esa rutina
-                card.findViewById<Button>(R.id.btnEmpezarEjercicio).setOnClickListener {
-                    val intent = Intent(this, EntrenamientoActivity::class.java)
-                    intent.putExtra("rutina_id",   rutina.id_rutina)
-                    intent.putExtra("rutina_json", Gson().toJson(rutina))
-                    startActivity(intent)
                 }
 
                 container.addView(card)

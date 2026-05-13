@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_ejercicio_info.xml — Tarjeta informativa de ejercicio dentro de un bloque de rutina.
+    Solo muestra info: número, imagen, nombre, series×reps, descanso, peso, notas.
+    NO tiene botón — el botón único está en el header item_rutina_header.xml
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/axf_bg_card"
+    android:layout_marginBottom="8dp"
+    android:layout_marginStart="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <!-- Barra accent naranja izquierda -->
+        <View
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:background="@color/axf_orange"
+            android:layout_marginEnd="2dp"/>
+
+        <!-- Número de orden -->
+        <LinearLayout
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_serie_num_circle"
+            android:gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp">
+            <TextView
+                android:id="@+id/tvEjOrden"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textColor="@color/axf_orange"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <!-- Imagen del ejercicio -->
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_card_orange"
+            android:clipToOutline="true">
+
+            <ImageView
+                android:id="@+id/ivEjImagen"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:scaleType="centerCrop"
+                android:clipToOutline="true"
+                android:contentDescription="Ejercicio"/>
+
+            <TextView
+                android:id="@+id/tvEjImagenFallback"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:gravity="center"
+                android:text="💪"
+                android:textSize="24sp"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <!-- Datos del ejercicio -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="12dp">
+
+            <!-- Nombre -->
+            <TextView
+                android:id="@+id/tvEjNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Press de Banca"
+                android:textColor="@color/axf_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Fila: badge series×reps + descanso -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="3dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_muscle_badge"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/tvEjSeriesReps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 × 10"
+                        android:textColor="@color/axf_orange"
+                        android:textSize="11sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvEjDescanso"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="60s descanso"
+                    android:textColor="@color/axf_text_tertiary"
+                    android:textSize="11sp"/>
+            </LinearLayout>
+
+            <!-- Peso -->
+            <TextView
+                android:id="@+id/tvEjPeso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="· Peso libre"
+                android:textColor="@color/axf_text_tertiary"
+                android:textSize="10sp"
+                android:layout_marginBottom="2dp"/>
+
+            <!-- Notas técnicas (ocultas si no hay) -->
+            <TextView
+                android:id="@+id/tvEjNotas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/axf_text_secondary"
+                android:textSize="10sp"
+                android:lineSpacingExtra="2dp"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
