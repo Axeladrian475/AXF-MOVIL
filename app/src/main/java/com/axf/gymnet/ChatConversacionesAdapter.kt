@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.axf.gymnet.data.ChatConversacion
+import com.axf.gymnet.network.RetrofitClient
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
@@ -15,7 +16,6 @@ class ChatConversacionesAdapter(
     private val onClick: (ChatConversacion) -> Unit
 ) : RecyclerView.Adapter<ChatConversacionesAdapter.VH>() {
 
-    // id_personal → está escribiendo
     private val escribiendo = mutableSetOf<Int>()
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
@@ -36,13 +36,17 @@ class ChatConversacionesAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val c = lista[position]
 
-        // Avatar: foto real o inicial
-        val fotoUrl = c.foto_url
-        if (!fotoUrl.isNullOrBlank()) {
+        // Construir URL absoluta — el backend devuelve rutas relativas (/uploads/...)
+        val base = RetrofitClient.BASE_URL.trimEnd('/')
+        val fotoAbsoluta = c.foto_url
+            ?.takeIf { it.isNotBlank() }
+            ?.let { if (it.startsWith("http")) it else "$base$it" }
+
+        if (!fotoAbsoluta.isNullOrBlank()) {
             holder.ivAvatar.visibility = View.VISIBLE
             holder.tvAvatar.visibility = View.GONE
             Glide.with(holder.itemView.context)
-                .load(fotoUrl)
+                .load(fotoAbsoluta)
                 .circleCrop()
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .placeholder(R.drawable.bg_card_orange)
@@ -55,13 +59,12 @@ class ChatConversacionesAdapter(
         }
 
         holder.tvNombre.text = c.nombre_personal
-        holder.tvPuesto.text = c.puesto ?: ""
+        holder.tvPuesto.text = c.puesto?.replace('_', ' ') ?: ""
 
-        if (escribiendo.contains(c.id_personal)) {
-            holder.tvUltimo.text = "Escribiendo..."
-        } else {
-            holder.tvUltimo.text = c.ultimo_mensaje ?: "Sin mensajes"
-        }
+        holder.tvUltimo.text = if (escribiendo.contains(c.id_personal))
+            "Escribiendo..."
+        else
+            c.ultimo_mensaje ?: "Sin mensajes"
 
         if (c.no_leidos > 0) {
             holder.tvBadge.visibility = View.VISIBLE
