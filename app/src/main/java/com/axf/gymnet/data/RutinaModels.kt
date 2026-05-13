@@ -20,7 +20,8 @@ data class EjercicioRutina(
     val repeticiones: Int,
     val descanso_seg: Int?,         // null = sin descanso
     val peso_kg: Double?,
-    val descripcion_tecnica: String?
+    val descripcion_tecnica: String?,
+    val grupo_muscular: String?     // categoría propia del ejercicio (ej: "Pecho", "Pierna")
 )
 
 // ─── Request para guardar series completadas ─────────────────────────────────

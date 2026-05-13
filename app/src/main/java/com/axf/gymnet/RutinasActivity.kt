@@ -3,20 +3,48 @@ package com.axf.gymnet
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
+import com.axf.gymnet.data.EjercicioRutina
 import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.network.RetrofitClient
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
+/**
+ * RutinasActivity — agrupa los ejercicios por su PROPIO grupo muscular
+ * (campo `grupo_muscular` de cada EjercicioRutina), no por el nombre de la rutina.
+ *
+ * Ejemplo:
+ *   Rutina "Pecho y Espalda" tiene 4 ejercicios:
+ *     - Press banca          → grupo_muscular = "Pecho"
+ *     - Aperturas            → grupo_muscular = "Pecho"
+ *     - Jalón al pecho       → grupo_muscular = "Espalda"
+ *     - Remo con barra       → grupo_muscular = "Espalda"
+ *
+ *   Resultado visible:
+ *     ── PECHO ──────────────────
+ *     • Press banca  (De: Pecho y Espalda)
+ *     • Aperturas    (De: Pecho y Espalda)
+ *     ── ESPALDA ─────────────────
+ *     • Jalón al pecho  (De: Pecho y Espalda)
+ *     • Remo con barra  (De: Pecho y Espalda)
+ *
+ * Si un ejercicio no tiene `grupo_muscular` en el API, usa el nombre
+ * de la rutina como categoría de respaldo.
+ */
 class RutinasActivity : AppCompatActivity() {
+
+    /** Ejercicio + contexto de la rutina de la que proviene */
+    private data class EjercicioConContexto(
+        val ejercicio: EjercicioRutina,
+        val rutina: RutinaResponse
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,9 +79,12 @@ class RutinasActivity : AppCompatActivity() {
                     if (rutinas.isEmpty()) {
                         layoutVacio.visibility = View.VISIBLE
                     } else {
-                        containerList.removeAllViews()
-                        rutinas.forEach { rutina ->
-                            containerList.addView(crearTarjetaRutina(rutina))
+                        val grupos = agruparPorCategoria(rutinas)
+                        if (grupos.isEmpty()) {
+                            layoutVacio.visibility = View.VISIBLE
+                        } else {
+                            containerList.removeAllViews()
+                            renderizarGrupos(containerList, grupos)
                         }
                     }
                 } else {
@@ -68,49 +99,125 @@ class RutinasActivity : AppCompatActivity() {
         }
     }
 
-    private fun crearTarjetaRutina(rutina: RutinaResponse): View {
-        val inflater = layoutInflater
-        val card = inflater.inflate(R.layout.item_rutina, null) as CardView
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1. Agrupación por grupo_muscular PROPIO del ejercicio
+    // ─────────────────────────────────────────────────────────────────────────
 
-        val tvFecha      = card.findViewById<TextView>(R.id.tvRutinaFecha)
-        val tvNombre     = card.findViewById<TextView>(R.id.tvRutinaNombre)
-        val tvEntrenador = card.findViewById<TextView>(R.id.tvRutinaEntrenador)
-        val tvEjercicios = card.findViewById<TextView>(R.id.tvRutinaEjercicios)
-        val btnEmpezar   = card.findViewById<View>(R.id.btnEmpezarRutina)
+    /**
+     * Recorre todas las rutinas y todos sus ejercicios.
+     * Cada ejercicio se clasifica bajo su [EjercicioRutina.grupo_muscular].
+     *
+     * Si el campo viene null/vacío, se usa el nombre de la rutina como
+     * categoría de respaldo para no perder el ejercicio.
+     *
+     * El mapa resultante está ordenado: mayor cantidad de ejercicios primero;
+     * en caso de empate, orden alfabético.
+     */
+    private fun agruparPorCategoria(
+        rutinas: List<RutinaResponse>
+    ): LinkedHashMap<String, MutableList<EjercicioConContexto>> {
 
-        // Nombre de la rutina (Grupo Muscular) - Formato: "Rutina de [Nombre]"
-        tvNombre.text = if (!rutina.nombre.isNullOrBlank()) {
-            "Rutina de ${rutina.nombre}"
-        } else {
-            "Rutina de Entrenamiento"
+        val mapa = mutableMapOf<String, MutableList<EjercicioConContexto>>()
+
+        for (rutina in rutinas) {
+            for (ejercicio in rutina.ejercicios) {
+                // Categoría = grupo_muscular del ejercicio; fallback = nombre de la rutina
+                val categoria = resolverCategoria(ejercicio, rutina)
+                mapa.getOrPut(categoria) { mutableListOf() }
+                    .add(EjercicioConContexto(ejercicio, rutina))
+            }
         }
 
-        // Formatear fecha
-        val sdfOut = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val formatos = listOf(
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",     Locale.US),
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss",           Locale.US),
-            SimpleDateFormat("yyyy-MM-dd",                    Locale.US)
+        // Ordenar por cantidad de ejercicios desc, luego alfabético
+        val ordenadas = mapa.entries.sortedWith(
+            compareByDescending<Map.Entry<String, MutableList<EjercicioConContexto>>> {
+                it.value.size
+            }.thenBy { it.key }
         )
-        tvFecha.text = formatos.firstNotNullOfOrNull { fmt ->
-            try { sdfOut.format(fmt.parse(rutina.creado_en)!!) } catch (_: Exception) { null }
-        } ?: rutina.creado_en.take(10)
 
-        tvEntrenador.text = "Entrenador: ${rutina.entrenador}"
-
-        // Listar ejercicios resumidos
-        val nombresEjercicios = rutina.ejercicios.take(3).joinToString(", ") { it.nombre }
-        val extras = if (rutina.ejercicios.size > 3) " +" + (rutina.ejercicios.size - 3) + " más" else ""
-        tvEjercicios.text = nombresEjercicios + extras
-
-        btnEmpezar.setOnClickListener {
-            val intent = Intent(this, EntrenamientoActivity::class.java)
-            intent.putExtra("rutina_id", rutina.id_rutina)
-            intent.putExtra("rutina_json", Gson().toJson(rutina))
-            startActivity(intent)
+        return LinkedHashMap<String, MutableList<EjercicioConContexto>>().also { lhm ->
+            ordenadas.forEach { lhm[it.key] = it.value }
         }
+    }
 
-        return card
+    /**
+     * Determina la categoría de un ejercicio:
+     *   1. Usa [EjercicioRutina.grupo_muscular] si viene del API.
+     *   2. Si no, usa el nombre de la rutina (ej: "Pecho y Espalda").
+     *   3. Si tampoco hay nombre, retorna "General".
+     */
+    private fun resolverCategoria(ej: EjercicioRutina, rutina: RutinaResponse): String {
+        if (!ej.grupo_muscular.isNullOrBlank()) {
+            return ej.grupo_muscular.trim().capitalizar()
+        }
+        if (!rutina.nombre.isNullOrBlank()) {
+            return rutina.nombre.trim().capitalizar()
+        }
+        return "General"
+    }
+
+    private fun String.capitalizar(): String =
+        this.lowercase().replaceFirstChar { it.uppercase() }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 2. Renderizar grupos en pantalla
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private fun renderizarGrupos(
+        container: LinearLayout,
+        grupos: LinkedHashMap<String, MutableList<EjercicioConContexto>>
+    ) {
+        val inflater = layoutInflater
+
+        for ((categoria, items) in grupos) {
+
+            // ── Header de sección ──────────────────────────────────────────
+            val header = inflater.inflate(R.layout.item_categoria_header, container, false)
+            header.findViewById<TextView>(R.id.tvCategoriaNombre).text =
+                categoria.uppercase()
+            header.findViewById<TextView>(R.id.tvCategoriaCount).text =
+                items.size.toString()
+            container.addView(header)
+
+            // ── Tarjeta de cada ejercicio ──────────────────────────────────
+            for (item in items) {
+                val card = inflater.inflate(
+                    R.layout.item_ejercicio_categoria, container, false
+                ) as CardView
+
+                val ej     = item.ejercicio
+                val rutina = item.rutina
+
+                // Nombre del ejercicio
+                card.findViewById<TextView>(R.id.tvEjNombre).text = ej.nombre
+
+                // Series × Repeticiones
+                card.findViewById<TextView>(R.id.tvEjSeriesReps).text =
+                    "${ej.series} × ${ej.repeticiones}"
+
+                // Peso sugerido
+                val tvPeso = card.findViewById<TextView>(R.id.tvEjPeso)
+                tvPeso.text = if ((ej.peso_kg ?: 0.0) > 0.0) {
+                    "· ${ej.peso_kg} kg sugerido"
+                } else {
+                    "· Peso libre"
+                }
+
+                // Origen — rutina + entrenador
+                val nombreRutina = rutina.nombre.takeIf { !it.isNullOrBlank() } ?: "Rutina"
+                card.findViewById<TextView>(R.id.tvEjRutinaOrigen).text =
+                    "De: $nombreRutina · ${rutina.entrenador}"
+
+                // Botón Empezar — lanza la rutina COMPLETA de origen
+                card.findViewById<Button>(R.id.btnEmpezarEjercicio).setOnClickListener {
+                    val intent = Intent(this, EntrenamientoActivity::class.java)
+                    intent.putExtra("rutina_id", rutina.id_rutina)
+                    intent.putExtra("rutina_json", Gson().toJson(rutina))
+                    startActivity(intent)
+                }
+
+                container.addView(card)
+            }
+        }
     }
 }

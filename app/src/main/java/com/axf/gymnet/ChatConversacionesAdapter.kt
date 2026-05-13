@@ -3,9 +3,12 @@ package com.axf.gymnet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.axf.gymnet.data.ChatConversacion
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class ChatConversacionesAdapter(
     private val lista: MutableList<ChatConversacion>,
@@ -16,11 +19,12 @@ class ChatConversacionesAdapter(
     private val escribiendo = mutableSetOf<Int>()
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val tvAvatar : TextView = v.findViewById(R.id.tvAvatar)
-        val tvNombre : TextView = v.findViewById(R.id.tvNombrePersonal)
-        val tvPuesto : TextView = v.findViewById(R.id.tvPuesto)
-        val tvUltimo : TextView = v.findViewById(R.id.tvUltimoMensaje)
-        val tvBadge  : TextView = v.findViewById(R.id.tvNoLeidos)
+        val ivAvatar : ImageView = v.findViewById(R.id.ivAvatarConv)
+        val tvAvatar : TextView  = v.findViewById(R.id.tvAvatar)
+        val tvNombre : TextView  = v.findViewById(R.id.tvNombrePersonal)
+        val tvPuesto : TextView  = v.findViewById(R.id.tvPuesto)
+        val tvUltimo : TextView  = v.findViewById(R.id.tvUltimoMensaje)
+        val tvBadge  : TextView  = v.findViewById(R.id.tvNoLeidos)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -31,7 +35,25 @@ class ChatConversacionesAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val c = lista[position]
-        holder.tvAvatar.text = c.nombre_personal.firstOrNull()?.uppercase() ?: "?"
+
+        // Avatar: foto real o inicial
+        val fotoUrl = c.foto_url
+        if (!fotoUrl.isNullOrBlank()) {
+            holder.ivAvatar.visibility = View.VISIBLE
+            holder.tvAvatar.visibility = View.GONE
+            Glide.with(holder.itemView.context)
+                .load(fotoUrl)
+                .circleCrop()
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .placeholder(R.drawable.bg_card_orange)
+                .error(R.drawable.bg_card_orange)
+                .into(holder.ivAvatar)
+        } else {
+            holder.ivAvatar.visibility = View.GONE
+            holder.tvAvatar.visibility = View.VISIBLE
+            holder.tvAvatar.text = c.nombre_personal.firstOrNull()?.uppercase() ?: "?"
+        }
+
         holder.tvNombre.text = c.nombre_personal
         holder.tvPuesto.text = c.puesto ?: ""
 

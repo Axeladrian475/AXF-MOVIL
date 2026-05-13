@@ -10,17 +10,52 @@
     android:layout_height="wrap_content"
     android:padding="4dp">
 
+    <!-- Avatar del suscriptor (derecha) -->
+    <FrameLayout
+        android:id="@+id/flAvatarSuscriptor"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="2dp">
+
+        <!-- Foto real -->
+        <ImageView
+            android:id="@+id/ivAvatarSuscMsg"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_avatar_circle"
+            android:clipToOutline="true"
+            android:visibility="gone"
+            android:contentDescription="Foto suscriptor"/>
+
+        <!-- Inicial fallback -->
+        <TextView
+            android:id="@+id/tvAvatarSuscMsg"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:gravity="center"
+            android:textColor="@color/axf_text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_card_orange"/>
+    </FrameLayout>
+
     <LinearLayout
         android:id="@+id/llBurbuja"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@id/flAvatarSuscriptor"
+        android:layout_alignParentStart="true"
         android:layout_marginStart="60dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="6dp"
         android:orientation="vertical"
         android:background="@drawable/bg_burbuja_enviado"
         android:padding="10dp"
-        android:maxWidth="280dp">
+        android:maxWidth="260dp">
+
 
         <!-- Reply/Cita -->
         <LinearLayout

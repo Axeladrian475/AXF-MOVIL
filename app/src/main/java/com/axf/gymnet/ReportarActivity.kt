@@ -35,7 +35,6 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
-import java.io.FileOutputStream
 
 class ReportarActivity : AppCompatActivity() {
 
@@ -52,7 +51,8 @@ class ReportarActivity : AppCompatActivity() {
     private lateinit var cbPrivado: CheckBox
     private lateinit var layoutPrivado: LinearLayout
     private lateinit var layoutPersonal: LinearLayout
-    private lateinit var spinnerPersonal: Spinner
+    private lateinit var rvPersonal: RecyclerView
+    private var personalAdapter: PersonalSeleccionAdapter? = null
     private lateinit var layoutAtencionPrevia: LinearLayout
     private lateinit var cbSobreAtencion: CheckBox
     private lateinit var btnEnviarReporte: Button
@@ -133,8 +133,9 @@ class ReportarActivity : AppCompatActivity() {
         cbPrivado            = findViewById(R.id.cbPrivado)
         layoutPrivado        = findViewById(R.id.layoutPrivado)
         layoutPersonal       = findViewById(R.id.layoutPersonal)
-        spinnerPersonal      = findViewById(R.id.spinnerPersonal)
+        rvPersonal           = findViewById(R.id.rvPersonal)
         layoutAtencionPrevia = findViewById(R.id.layoutAtencionPrevia)
+        rvPersonal.layoutManager = LinearLayoutManager(this)
         cbSobreAtencion      = findViewById(R.id.cbSobreAtencion)
         btnEnviarReporte     = findViewById(R.id.btnEnviarReporte)
         tvEstadoEnvio        = findViewById(R.id.tvEstadoEnvio)
@@ -273,26 +274,23 @@ class ReportarActivity : AppCompatActivity() {
                 val res = RetrofitClient.instance.getPersonalSucursal("Bearer $token", idSucursal)
                 if (res.isSuccessful) {
                     personalLista = res.body() ?: emptyList()
-                    poblarSpinnerPersonal()
+                    poblarListaPersonal()
                 }
             } catch (_: Exception) {}
         }
     }
 
-    private fun poblarSpinnerPersonal() {
-        val nombres = personalLista.map { "${it.nombres} ${it.apellido_paterno} (${it.puesto.replace('_', ' ')})" }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, nombres)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerPersonal.adapter = adapter
-        spinnerPersonal.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p: AdapterView<*>, v: View?, pos: Int, id: Long) {
-                if (pos in personalLista.indices) {
-                    personalSeleccionadoId = personalLista[pos].id_personal
-                    verificarAtencionPrevia(personalSeleccionadoId)
-                }
-            }
-            override fun onNothingSelected(p: AdapterView<*>) {}
+    private fun poblarListaPersonal() {
+        if (personalLista.isEmpty()) return
+        // Seleccionar el primero por defecto
+        personalSeleccionadoId = personalLista[0].id_personal
+        verificarAtencionPrevia(personalSeleccionadoId)
+
+        personalAdapter = PersonalSeleccionAdapter(personalLista) { personal, _ ->
+            personalSeleccionadoId = personal.id_personal
+            verificarAtencionPrevia(personalSeleccionadoId)
         }
+        rvPersonal.adapter = personalAdapter
     }
 
     private fun verificarAtencionPrevia(idPersonal: Int) {

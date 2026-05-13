@@ -78,6 +78,9 @@ dependencies {
     // Socket.IO
     implementation("io.socket:socket.io-client:2.1.0")
 
+    // Glide — carga de imágenes remotas (fotos de perfil)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     // Firebase BOM (controla versiones automáticamente)
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging-ktx")

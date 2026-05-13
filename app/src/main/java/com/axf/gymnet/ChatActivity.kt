@@ -44,6 +44,7 @@ class ChatActivity : AppCompatActivity() {
 
     private var idPersonal  = 0
     private var token       = ""
+    private var fotoPersonal = ""     // URL foto del personal
     private var replyMsg:    ChatMensaje? = null
     private var editandoMsg: ChatMensaje? = null
     private var hayMasAntiguos = false
@@ -83,6 +84,12 @@ class ChatActivity : AppCompatActivity() {
         // Soporta tanto intent normal como deep link desde notificación push
         idPersonal = intent.getIntExtra("id_personal", 0)
         val nombre = intent.getStringExtra("nombre_personal") ?: "Chat"
+        fotoPersonal = intent.getStringExtra("foto_personal") ?: ""
+
+        // Datos del suscriptor (nombre e iniciales para su avatar)
+        val prefs2 = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        val nombreSusc = "${prefs2.getString("userName", "") ?: ""} ${prefs2.getString("userApellido", "") ?: ""}".trim()
+        val fotoSusc   = prefs2.getString("foto_suscriptor", "") ?: ""
 
         // Guardar nombre en caché para las notificaciones de background
         if (idPersonal > 0 && nombre != "Chat") {
@@ -106,7 +113,14 @@ class ChatActivity : AppCompatActivity() {
         btnCancelarReply.setOnClickListener { cancelarReply() }
 
         val lm = LinearLayoutManager(this).apply { stackFromEnd = true }
-        adapter = ChatMensajesAdapter(mutableListOf(), "suscriptor")
+        adapter = ChatMensajesAdapter(
+            mutableListOf(),
+            "suscriptor",
+            fotoPersonalUrl   = fotoPersonal.ifBlank { null },
+            fotoSuscriptorUrl = fotoSusc.ifBlank { null },
+            nombrePersonal    = nombre,
+            nombreSuscriptor  = nombreSusc
+        )
         adapter.onLongClick = { msg -> mostrarMenuMensaje(msg) }
         rv.layoutManager = lm
         rv.adapter = adapter

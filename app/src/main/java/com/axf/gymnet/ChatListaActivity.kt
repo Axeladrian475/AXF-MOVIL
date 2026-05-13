@@ -44,6 +44,7 @@ class ChatListaActivity : AppCompatActivity() {
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("id_personal",     conv.id_personal)
             intent.putExtra("nombre_personal", conv.nombre_personal)
+            intent.putExtra("foto_personal",   conv.foto_url ?: "")
             startActivity(intent)
         }
         rv.adapter = adapter

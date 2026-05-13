@@ -9,17 +9,51 @@
     android:layout_height="wrap_content"
     android:padding="4dp">
 
+    <!-- Avatar del personal (izquierda) -->
+    <FrameLayout
+        android:id="@+id/flAvatarPersonal"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="2dp">
+
+        <!-- Foto real -->
+        <ImageView
+            android:id="@+id/ivAvatarMsg"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bg_avatar_circle"
+            android:clipToOutline="true"
+            android:visibility="gone"
+            android:contentDescription="Foto personal"/>
+
+        <!-- Inicial fallback -->
+        <TextView
+            android:id="@+id/tvAvatarMsg"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:gravity="center"
+            android:textColor="@color/axf_text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_card_orange"/>
+    </FrameLayout>
+
     <LinearLayout
         android:id="@+id/llBurbuja"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="8dp"
+        android:layout_toEndOf="@id/flAvatarPersonal"
+        android:layout_marginStart="6dp"
         android:layout_marginEnd="60dp"
         android:orientation="vertical"
         android:background="@drawable/bg_burbuja_recibido"
         android:padding="10dp"
-        android:maxWidth="280dp">
+        android:maxWidth="260dp">
+
 
         <LinearLayout
             android:id="@+id/llReply"

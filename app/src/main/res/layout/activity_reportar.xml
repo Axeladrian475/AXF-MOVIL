@@ -157,21 +157,14 @@
                         android:letterSpacing="0.04"
                         android:layout_marginBottom="6dp"/>
 
-                    <androidx.cardview.widget.CardView
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvPersonal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/axf_bg_card"
-                        android:layout_marginBottom="14dp">
-                        <Spinner
-                            android:id="@+id/spinnerPersonal"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:background="@null"/>
-                    </androidx.cardview.widget.CardView>
+                        android:maxHeight="260dp"
+                        android:nestedScrollingEnabled="false"
+                        android:layout_marginBottom="14dp"/>
+
 
                     <!-- Aviso atención previa -->
                     <LinearLayout
