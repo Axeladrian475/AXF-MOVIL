@@ -67,6 +67,7 @@ class LoginActivity : AppCompatActivity() {
                         .putString("token",            it.token)
                         .putBoolean("suscripcionActiva", it.suscriptor.suscripcionActiva)
                         .putString("fechaVencimiento", it.suscriptor.fechaVencimiento ?: "")
+                        .putString("foto_suscriptor",  it.suscriptor.foto_url ?: "")
                         .apply()
 
                     // Registrar FCM token con el nuevo authToken
