@@ -113,6 +113,19 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="58dp"/>
 
+            <!-- Lista de ejercicios de la rutina -->
+            <TextView
+                android:id="@+id/tvRutinaEjercicios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/axf_text_secondary"
+                android:textSize="11sp"
+                android:lineSpacingExtra="3dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="58dp"
+                android:visibility="gone"/>
+
             <!-- Separador naranja decorativo -->
             <View
                 android:layout_width="match_parent"

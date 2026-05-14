@@ -80,23 +80,18 @@ class RutinasActivity : AppCompatActivity() {
     private fun calcularBloques(rutina: RutinaResponse): List<BloqueRutina> {
         val ejercicios = rutina.ejercicios ?: emptyList()
 
+        // Si el backend ya devuelve bloques con nombre, usarlos directamente
         val bloquesBackend = rutina.bloques
-        if (!bloquesBackend.isNullOrEmpty()) return bloquesBackend
+        if (!bloquesBackend.isNullOrEmpty() && bloquesBackend.any { it.nombre != null }) return bloquesBackend
 
-        // Parsear nombres de bloques desde notas_pdf: "Pecho: texto\nEspalda: texto"
-        val nombresPorIdx = mutableMapOf<Int, String>()
-        rutina.notas_pdf?.split("\n")?.forEachIndexed { idx, linea ->
-            val match = Regex("^([^:]+):").find(linea.trim())
-            if (match != null) nombresPorIdx[idx] = match.groupValues[1].trim()
-        }
-
+        // Agrupar por bloque_idx y tomar el nombre_bloque del primer ejercicio de cada bloque
         return ejercicios
             .map { it.getBloqueIdx() }
             .distinct()
             .sorted()
-            .mapIndexed { posicion, bloqueIdx ->
-                val nombre = nombresPorIdx[posicion]
-                    ?: ejercicios.firstOrNull { it.getBloqueIdx() == bloqueIdx }?.grupo_muscular
+            .map { bloqueIdx ->
+                val primerEj = ejercicios.first { it.getBloqueIdx() == bloqueIdx }
+                val nombre = primerEj.getNombreBloque()
                 BloqueRutina(bloque_idx = bloqueIdx, nombre = nombre)
             }
     }
@@ -132,6 +127,16 @@ class RutinasActivity : AppCompatActivity() {
 
             header.findViewById<TextView>(R.id.tvRutinaEntrenador).text =
                 "Asignada por: ${rutina.entrenador}"
+
+            // Mostrar nombres de ejercicios debajo del entrenador
+            val tvEjercicios = header.findViewById<TextView>(R.id.tvRutinaEjercicios)
+            if (ejercicios.isNotEmpty()) {
+                val maxMostrar = 4
+                val nombres = ejercicios.take(maxMostrar).joinToString("\n") { "• ${it.nombre}" }
+                val extra = if (ejercicios.size > maxMostrar) "\n  +${ejercicios.size - maxMostrar} más..." else ""
+                tvEjercicios.text = nombres + extra
+                tvEjercicios.visibility = android.view.View.VISIBLE
+            }
 
             header.findViewById<android.widget.Button>(R.id.btnEmpezarRutina)
                 .setOnClickListener { lanzarRutinaOSeleccionarGrupo(rutina) }
@@ -169,7 +174,8 @@ class RutinasActivity : AppCompatActivity() {
 
         bloques.forEachIndexed { i, bloque ->
             val ejerciciosBloque = ejercicios.filter { it.getBloqueIdx() == bloque.bloque_idx }
-            val nombreBloque     = bloque.nombre?.replaceFirstChar { it.uppercase() } ?: "Bloque ${i + 1}"
+            // Usar nombre real del músculo; si no hay, "Bloque N"
+            val nombreBloque = bloque.nombre?.replaceFirstChar { it.uppercase() } ?: "Bloque ${i + 1}"
 
             // Inflar la tarjeta de bloque
             val card = layoutInflater.inflate(R.layout.item_bloque_btn, containerGrupos, false)

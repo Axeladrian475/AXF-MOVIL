@@ -1,107 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    item_categoria_header.xml — Encabezado de sección por grupo muscular
-    Muestra el nombre del grupo (ej: PECHO), el ícono de categoría y el conteo de ejercicios.
+    item_rutina_header.xml — Header de cada bloque/día de rutina.
+    Muestra: nombre del día (ej: "PECHO"), conteo de ejercicios,
+    entrenador asignador, y el botón ÚNICO "▶ Empezar Rutina Completa".
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_marginTop="24dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginBottom="4dp">
 
-    <!-- Fila principal del header -->
-    <LinearLayout
+    <!-- Tarjeta header con fondo oscuro -->
+    <androidx.cardview.widget.CardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="@drawable/bg_category_header"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp">
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/axf_bg_primary">
 
-        <!-- Ícono círculo naranja -->
         <LinearLayout
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/bg_serie_num_circle"
-            android:gravity="center"
-            android:layout_marginEnd="14dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_nav_entreno"
-                android:tint="@color/axf_orange"
-                android:contentDescription="Grupo muscular"/>
-        </LinearLayout>
-
-        <!-- Nombre del grupo muscular -->
-        <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GRUPO MUSCULAR"
-                android:textColor="@color/axf_text_tertiary"
-                android:textSize="9sp"
-                android:letterSpacing="0.15"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/tvCategoriaNombre"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PECHO"
-                android:textColor="@color/axf_text_primary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginTop="2dp"/>
-        </LinearLayout>
-
-        <!-- Badge conteo de ejercicios -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_muscle_badge"
             android:orientation="vertical"
-            android:gravity="center"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
 
-            <TextView
-                android:id="@+id/tvCategoriaCount"
-                android:layout_width="wrap_content"
+            <!-- Fila: ícono + nombre + conteo -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="5"
-                android:textColor="@color/axf_orange"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <!-- Ícono círculo naranja -->
+                <LinearLayout
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_serie_num_circle"
+                    android:gravity="center"
+                    android:layout_marginEnd="14dp">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_entreno"
+                        android:tint="@color/axf_orange"
+                        android:contentDescription="Rutina"/>
+                </LinearLayout>
+
+                <!-- Nombre del día -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="RUTINA DEL DÍA"
+                        android:textColor="@color/axf_text_tertiary"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.15"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/tvRutinaNombre"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PECHO"
+                        android:textColor="@color/axf_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <!-- Badge conteo -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_muscle_badge"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/tvRutinaCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5 ejercicios"
+                        android:textColor="@color/axf_orange"
+                        android:textSize="12sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Entrenador -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tvRutinaEntrenador"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ejercicios"
+                android:text="Asignada por: Entrenador"
                 android:textColor="@color/axf_text_tertiary"
-                android:textSize="9sp"/>
-        </LinearLayout>
+                android:textSize="11sp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="58dp"/>
 
-    </LinearLayout>
+            <!-- Lista de ejercicios de la rutina -->
+            <TextView
+                android:id="@+id/tvRutinaEjercicios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/axf_text_secondary"
+                android:textSize="11sp"
+                android:lineSpacingExtra="3dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="58dp"
+                android:visibility="gone"/>
+
+            <!-- Separador naranja decorativo -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/axf_orange"
+                android:alpha="0.3"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Botón ÚNICO "Empezar Rutina Completa" -->
+            <Button
+                android:id="@+id/btnEmpezarRutina"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="▶  Empezar Rutina Completa"
+                android:background="@drawable/bg_btn_orange_rounded"
+                android:textColor="@color/axf_text_primary"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:stateListAnimator="@null"
+                android:letterSpacing="0.02"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Línea decorativa naranja inferior -->
     <View
         android:layout_width="50dp"
         android:layout_height="3dp"
         android:background="@color/axf_orange"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="16dp"/>
 
 </LinearLayout>

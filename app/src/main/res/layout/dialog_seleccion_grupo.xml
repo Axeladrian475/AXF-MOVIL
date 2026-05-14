@@ -42,7 +42,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SELECCIONA BLOQUE"
+                android:text="SELECCIONA MÚSCULO"
                 android:textColor="@color/axf_orange"
                 android:textSize="9sp"
                 android:letterSpacing="0.15"
@@ -80,7 +80,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="¿Qué vas a trabajar hoy?"
+        android:text="¿Qué músculo vas a entrenar hoy?"
         android:textColor="@color/axf_text_secondary"
         android:textSize="12sp"
         android:layout_marginBottom="12dp"/>
