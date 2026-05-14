@@ -125,6 +125,12 @@ interface ApiService {
         @Path("id") idDieta: Int
     ): Response<DietaDetalle>
 
+    // ── REGISTROS FÍSICOS ──────────────────────────────────────────────────────
+    @GET("api/suscriptores/movil/registros")
+    suspend fun getRegistrosFisicos(
+        @Header("Authorization") token: String
+    ): Response<List<com.axf.gymnet.data.RegistroFisico>>
+
     // ── REPORTES ──────────────────────────────────────────────────────────────
 
     /** Lista de todas las sucursales activas (para el selector al reportar) */

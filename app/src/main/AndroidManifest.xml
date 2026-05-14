@@ -49,6 +49,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".RegistrosFisicosActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".ChatListaActivity"
             android:exported="false" />
 

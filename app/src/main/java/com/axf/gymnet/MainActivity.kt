@@ -126,6 +126,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListaActivity::class.java))
         }
 
+        findViewById<View>(R.id.cardDatosFisicos).setOnClickListener {
+            startActivity(Intent(this, RegistrosFisicosActivity::class.java))
+        }
+
         // Cargar suscripción REAL
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
