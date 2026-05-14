@@ -1,6 +1,7 @@
 package com.axf.gymnet
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
@@ -20,11 +21,13 @@ import java.util.Locale
 
 class RutinasActivity : AppCompatActivity() {
 
+    private var token: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rutinas)
 
-        val token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
             .getString("token", "") ?: ""
 
         val progressBar   = findViewById<ProgressBar>(R.id.progressRutinas)
@@ -53,7 +56,7 @@ class RutinasActivity : AppCompatActivity() {
                         layoutVacio.visibility = View.VISIBLE
                     } else {
                         containerList.removeAllViews()
-                        renderizarRutinas(containerList, rutinas)
+                        renderizarRutinas(containerList, rutinas, token)
                     }
                 } else {
                     tvVacio.text = "Error al cargar rutinas (${resp.code()})"
@@ -105,7 +108,7 @@ class RutinasActivity : AppCompatActivity() {
         return if (musculos.isNotBlank()) "$fecha  ·  $musculos" else fecha
     }
 
-    private fun renderizarRutinas(container: LinearLayout, rutinas: List<RutinaResponse>) {
+    private fun renderizarRutinas(container: LinearLayout, rutinas: List<RutinaResponse>, token: String) {
         val inflater = layoutInflater
 
         for (rutina in rutinas) {
@@ -140,6 +143,17 @@ class RutinasActivity : AppCompatActivity() {
 
             header.findViewById<android.widget.Button>(R.id.btnEmpezarRutina)
                 .setOnClickListener { lanzarRutinaOSeleccionarGrupo(rutina) }
+
+            // ── Botón Descargar PDF ───────────────────────────────────────
+            header.findViewById<TextView>(R.id.btnDescargarPdfRutina)
+                .setOnClickListener {
+                    val url = "${RetrofitClient.BASE_URL}api/suscriptores/movil/rutinas/${rutina.id_rutina}/pdf?token=$token"
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    } catch (_: Exception) {
+                        android.widget.Toast.makeText(this, "No se pudo abrir el PDF", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
 
             container.addView(header)
         }

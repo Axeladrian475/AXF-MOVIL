@@ -148,6 +148,20 @@
                 android:stateListAnimator="@null"
                 android:letterSpacing="0.02"/>
 
+            <!-- Botón Descargar PDF -->
+            <TextView
+                android:id="@+id/btnDescargarPdfRutina"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="📄  Descargar PDF"
+                android:textColor="@color/axf_orange"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:background="@android:color/transparent"
+                android:padding="8dp"/>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
