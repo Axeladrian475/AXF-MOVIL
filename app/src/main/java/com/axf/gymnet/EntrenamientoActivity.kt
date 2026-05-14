@@ -49,12 +49,13 @@ class EntrenamientoActivity : AppCompatActivity() {
         val rutinaJson = intent.getStringExtra("rutina_json") ?: run { finish(); return }
         rutina = Gson().fromJson(rutinaJson, RutinaResponse::class.java)
 
-        // Inicializar estado de series con los valores predefinidos
+        // Inicializar estado de series con los valores predefinidos o el historial reciente
         (rutina.ejercicios ?: emptyList()).forEach { ej ->
-            val series = (1..ej.series).map {
+            val series = (1..ej.series).map { idx ->
+                val hist = ej.historial_reciente?.find { it.num_serie == idx }
                 SerieState(
-                    pesoKg = ej.peso_kg ?: 0.0,
-                    reps   = ej.repeticiones
+                    pesoKg = hist?.peso_levantado ?: ej.peso_kg ?: 0.0,
+                    reps   = hist?.reps_realizadas ?: ej.repeticiones
                 )
             }.toMutableList()
             seriesState[ej.id_rutina_ejercicio] = series

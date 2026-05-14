@@ -29,7 +29,8 @@ data class EjercicioRutina(
     val descripcion_tecnica: String? = null,
     val grupo_muscular: String? = null,
     val nombre_bloque: String? = null,     // nombre guardado por el entrenador (ej: "Pecho")
-    val bloque_idx: Int? = null            // nullable — si no viene, se calcula desde orden
+    val bloque_idx: Int? = null,           // nullable — si no viene, se calcula desde orden
+    val historial_reciente: List<RegistroEntrenamiento>? = null
 ) {
     // Bloque calculado: si el backend no lo manda, se infiere de FLOOR(orden/100)
     fun getBloqueIdx(): Int = bloque_idx ?: (orden / 100)
@@ -42,6 +43,12 @@ data class EjercicioRutina(
 
 data class GuardarSerieRequest(
     val id_rutina_ejercicio: Int,
+    val num_serie: Int,
+    val peso_levantado: Double?,
+    val reps_realizadas: Int?
+)
+
+data class RegistroEntrenamiento(
     val num_serie: Int,
     val peso_levantado: Double?,
     val reps_realizadas: Int?
