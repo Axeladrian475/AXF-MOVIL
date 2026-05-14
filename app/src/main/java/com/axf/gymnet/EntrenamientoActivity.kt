@@ -50,7 +50,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         rutina = Gson().fromJson(rutinaJson, RutinaResponse::class.java)
 
         // Inicializar estado de series con los valores predefinidos
-        rutina.ejercicios.forEach { ej ->
+        (rutina.ejercicios ?: emptyList()).forEach { ej ->
             val series = (1..ej.series).map {
                 SerieState(
                     pesoKg = ej.peso_kg ?: 0.0,
@@ -95,7 +95,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         val container = findViewById<LinearLayout>(R.id.containerEjercicios)
         container.removeAllViews()
 
-        rutina.ejercicios.sortedBy { it.orden }.forEach { ejercicio ->
+        rutina.ejercicios.orEmpty().sortedBy { it.orden }.forEach { ejercicio ->
             container.addView(crearTarjetaEjercicio(ejercicio))
         }
     }

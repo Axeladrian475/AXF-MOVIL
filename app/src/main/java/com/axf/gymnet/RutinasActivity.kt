@@ -3,7 +3,6 @@ package com.axf.gymnet
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -16,18 +15,9 @@ import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.network.RetrofitClient
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-/**
- * RutinasActivity — Lista de rutinas agrupadas por nombre de día/bloque.
- *
- * Cambios respecto a versión anterior:
- * - El header muestra el NOMBRE de la rutina (ej: "Pecho", "Piernas") NO "RUTINA #16"
- * - El sub-label del header dice "RUTINA DEL DÍA" en lugar de "GRUPO MUSCULAR"
- * - El botón "▶ Empezar Rutina Completa" está UNA VEZ en el header de cada bloque,
- *   NO en cada ejercicio individual
- * - Los ejercicios solo muestran info (imagen, nombre, series×reps, descanso, peso)
- *   sin botón propio
- */
 class RutinasActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,81 +67,100 @@ class RutinasActivity : AppCompatActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Renderizado: una sección por rutina (un día/bloque)
-    // Header con nombre del día + botón ÚNICO de empezar
-    // Ejercicios solo informativos, sin botón individual
-    // ─────────────────────────────────────────────────────────────────────────
-    private fun renderizarRutinas(
-        container: LinearLayout,
-        rutinas: List<RutinaResponse>
-    ) {
+    // ── Formatea "2026-05-13T02:58:47.000Z" → "13 may 2026" ─────────────────
+    private fun formatearFecha(creado_en: String): String {
+        return try {
+            val entrada = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("es", "MX"))
+            val salida  = SimpleDateFormat("d MMM yyyy", Locale("es", "MX"))
+            salida.format(entrada.parse(creado_en)!!)
+        } catch (_: Exception) { creado_en.take(10) }
+    }
+
+    // ── Calcula los bloques desde orden (FLOOR(orden/100)) ───────────────────
+    private fun calcularBloques(rutina: RutinaResponse): List<BloqueRutina> {
+        val ejercicios = rutina.ejercicios ?: emptyList()
+
+        val bloquesBackend = rutina.bloques
+        if (!bloquesBackend.isNullOrEmpty()) return bloquesBackend
+
+        // Parsear nombres de bloques desde notas_pdf: "Pecho: texto\nEspalda: texto"
+        val nombresPorIdx = mutableMapOf<Int, String>()
+        rutina.notas_pdf?.split("\n")?.forEachIndexed { idx, linea ->
+            val match = Regex("^([^:]+):").find(linea.trim())
+            if (match != null) nombresPorIdx[idx] = match.groupValues[1].trim()
+        }
+
+        return ejercicios
+            .map { it.getBloqueIdx() }
+            .distinct()
+            .sorted()
+            .mapIndexed { posicion, bloqueIdx ->
+                val nombre = nombresPorIdx[posicion]
+                    ?: ejercicios.firstOrNull { it.getBloqueIdx() == bloqueIdx }?.grupo_muscular
+                BloqueRutina(bloque_idx = bloqueIdx, nombre = nombre)
+            }
+    }
+
+    // ── Genera el título: "13 may 2026 · Pecho / Espalda" ───────────────────
+    private fun generarTituloRutina(rutina: RutinaResponse, bloques: List<BloqueRutina>): String {
+        val fecha = formatearFecha(rutina.creado_en)
+        val musculos = bloques
+            .mapNotNull { it.nombre?.replaceFirstChar { c -> c.uppercase() } }
+            .joinToString(" / ")
+        return if (musculos.isNotBlank()) "$fecha  ·  $musculos" else fecha
+    }
+
+    private fun renderizarRutinas(container: LinearLayout, rutinas: List<RutinaResponse>) {
         val inflater = layoutInflater
 
         for (rutina in rutinas) {
-            if (rutina.ejercicios.isEmpty()) continue
+            val ejercicios = rutina.ejercicios ?: emptyList()
+            if (ejercicios.isEmpty()) continue
 
-            // ── Header del bloque: nombre del día + botón empezar ────────────
             val header = inflater.inflate(R.layout.item_rutina_header, container, false)
+            val bloques = calcularBloques(rutina)
 
-            // Nombre de la rutina (ej: "Pecho", "Piernas", "Brazos") — nunca "RUTINA #16"
-            val nombreRutina = rutina.nombre
-                ?.takeIf { it.isNotBlank() }
-                ?.uppercase()
-                ?: "RUTINA ${rutina.id_rutina}"
+            // Título: "13 may 2026  ·  Pecho / Espalda"
+            val titulo = generarTituloRutina(rutina, bloques)
+            header.findViewById<TextView>(R.id.tvRutinaNombre).apply {
+                text = titulo
+                textSize = 15f   // un poco menor para que quepa la fecha + músculos
+            }
 
-            header.findViewById<TextView>(R.id.tvRutinaNombre).text  = nombreRutina
-            // Si hay múltiples bloques, mostrar cuántos bloques tiene. Si no, cantidad de ejercicios
-            val numBloques = rutina.bloques.size
-            header.findViewById<TextView>(R.id.tvRutinaCount).text   =
-                if (numBloques > 1) "$numBloques bloques" else "${rutina.ejercicios.size} ejercicios"
+            header.findViewById<TextView>(R.id.tvRutinaCount).text =
+                if (bloques.size > 1) "${bloques.size} bloques" else "${ejercicios.size} ejercicios"
+
             header.findViewById<TextView>(R.id.tvRutinaEntrenador).text =
                 "Asignada por: ${rutina.entrenador}"
 
-            // Botón ÚNICO por rutina — abre selector de grupo si hay varios, si no arranca directo
-            header.findViewById<Button>(R.id.btnEmpezarRutina).setOnClickListener {
-                lanzarRutinaOSeleccionarGrupo(rutina)
-            }
+            header.findViewById<android.widget.Button>(R.id.btnEmpezarRutina)
+                .setOnClickListener { lanzarRutinaOSeleccionarGrupo(rutina) }
 
             container.addView(header)
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Si la rutina tiene múltiples bloques → diálogo para elegir cuál entrenar.
-    // Los bloques vienen del backend ya ordenados con nombre y bloque_idx.
-    // Si solo hay un bloque → arranca directo sin diálogo.
-    // ─────────────────────────────────────────────────────────────────────────
     private fun lanzarRutinaOSeleccionarGrupo(rutina: RutinaResponse) {
-
-        // Usar los bloques del backend si existen, sino inferir por bloque_idx
-        val bloques = if (rutina.bloques.isNotEmpty()) {
-            rutina.bloques
-        } else {
-            // Fallback: agrupar por bloque_idx (FLOOR(orden/100))
-            rutina.ejercicios
-                .map { it.bloque_idx }
-                .distinct()
-                .sorted()
-                .map { idx -> BloqueRutina(bloque_idx = idx, nombre = null) }
-        }
+        val ejercicios = rutina.ejercicios ?: emptyList()
+        val bloques    = calcularBloques(rutina)
 
         if (bloques.size <= 1) {
-            // Un solo bloque → lanzar directamente con todos los ejercicios
-            val nombreBloque = bloques.firstOrNull()?.nombre
-                ?: rutina.nombre
-                ?: "Entrenamiento"
-            abrirEntrenamiento(rutina, rutina.ejercicios, nombreBloque)
+            val nombre = bloques.firstOrNull()?.nombre ?: rutina.nombre ?: "Entrenamiento"
+            abrirEntrenamiento(rutina, ejercicios, nombre)
             return
         }
 
-        // Varios bloques → mostrar diálogo de selección
-        val dialogView = layoutInflater.inflate(R.layout.dialog_seleccion_grupo, null)
+        // ── Diálogo rediseñado ────────────────────────────────────────────────
+        val dialogView      = layoutInflater.inflate(R.layout.dialog_seleccion_grupo, null)
         val containerGrupos = dialogView.findViewById<LinearLayout>(R.id.containerGrupos)
-        val tvRutinaNombreDialog = dialogView.findViewById<TextView>(R.id.tvRutinaNombreDialog)
+        val tvNombre        = dialogView.findViewById<TextView>(R.id.tvRutinaNombreDialog)
+        val tvFecha         = dialogView.findViewById<TextView>(R.id.tvRutinaFechaDialog)
 
-        tvRutinaNombreDialog.text = rutina.nombre?.uppercase()
-            ?: "RUTINA ${rutina.id_rutina}"
+        // Título: músculos combinados
+        val musculos = bloques.mapNotNull { it.nombre?.replaceFirstChar { c -> c.uppercase() } }
+            .joinToString(" + ")
+        tvNombre.text = musculos.ifBlank { rutina.nombre?.uppercase() ?: "HOY ENTRENAS" }
+        tvFecha.text  = formatearFecha(rutina.creado_en)
 
         val dialog = AlertDialog.Builder(this, R.style.DialogDescanso)
             .setView(dialogView)
@@ -159,31 +168,20 @@ class RutinasActivity : AppCompatActivity() {
             .create()
 
         bloques.forEachIndexed { i, bloque ->
-            val ejerciciosBloque = rutina.ejercicios.filter { it.bloque_idx == bloque.bloque_idx }
-            val nombreBloque = bloque.nombre
-                ?: "Bloque ${i + 1}"
+            val ejerciciosBloque = ejercicios.filter { it.getBloqueIdx() == bloque.bloque_idx }
+            val nombreBloque     = bloque.nombre?.replaceFirstChar { it.uppercase() } ?: "Bloque ${i + 1}"
 
-            val btn = Button(this).apply {
-                text = "$nombreBloque  (${ejerciciosBloque.size} ejercicios)"
-                setBackgroundResource(R.drawable.bg_btn_orange_rounded)
-                setTextColor(resources.getColor(R.color.axf_text_primary, null))
-                textSize = 14f
-                val dp12 = (12 * resources.displayMetrics.density).toInt()
-                val dp8  = (8  * resources.displayMetrics.density).toInt()
-                setPadding(dp12, dp8, dp12, dp8)
-                stateListAnimator = null
-                val params = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                params.bottomMargin = dp8
-                layoutParams = params
-                setOnClickListener {
-                    dialog.dismiss()
-                    abrirEntrenamiento(rutina, ejerciciosBloque, nombreBloque)
-                }
+            // Inflar la tarjeta de bloque
+            val card = layoutInflater.inflate(R.layout.item_bloque_btn, containerGrupos, false)
+            card.findViewById<TextView>(R.id.tvBloqueNombre).text     = nombreBloque.uppercase()
+            card.findViewById<TextView>(R.id.tvBloqueEjercicios).text =
+                "${ejerciciosBloque.size} ejercicios"
+
+            card.setOnClickListener {
+                dialog.dismiss()
+                abrirEntrenamiento(rutina, ejerciciosBloque, nombreBloque)
             }
-            containerGrupos.addView(btn)
+            containerGrupos.addView(card)
         }
 
         dialog.show()
@@ -194,7 +192,6 @@ class RutinasActivity : AppCompatActivity() {
         ejercicios: List<EjercicioRutina>,
         grupoNombre: String
     ) {
-        // Crear una copia de la rutina solo con los ejercicios del bloque elegido
         val rutinaFiltrada = rutina.copy(
             nombre     = grupoNombre,
             ejercicios = ejercicios,

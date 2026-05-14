@@ -1,75 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    dialog_seleccion_grupo.xml — Diálogo para elegir qué grupo muscular
-    entrenar cuando una rutina tiene múltiples bloques (ej: Pecho + Espalda).
--->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/axf_bg_primary"
-    android:padding="24dp">
+    android:background="@drawable/bg_dialog_dark"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="24dp">
 
-    <!-- Ícono decorativo -->
+    <!-- Ícono + título -->
     <LinearLayout
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:background="@drawable/bg_serie_num_circle"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
 
-        <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_nav_entreno"
-            android:tint="@color/axf_orange"
-            android:contentDescription="Grupo muscular"/>
+        <!-- Ícono circular naranja -->
+        <LinearLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_serie_num_circle"
+            android:gravity="center"
+            android:layout_marginEnd="14dp">
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_nav_entreno"
+                android:tint="@color/axf_orange"
+                android:contentDescription="Entreno"/>
+        </LinearLayout>
+
+        <!-- Textos de cabecera -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SELECCIONA BLOQUE"
+                android:textColor="@color/axf_orange"
+                android:textSize="9sp"
+                android:letterSpacing="0.15"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvRutinaNombreDialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="HOY ENTRENAS"
+                android:textColor="@color/axf_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:id="@+id/tvRutinaFechaDialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="13 mayo 2026"
+                android:textColor="@color/axf_text_tertiary"
+                android:textSize="11sp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Título: "Elige qué entrenar hoy" -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="¿Qué vas a entrenar hoy?"
-        android:textColor="@color/axf_text_tertiary"
-        android:textSize="11sp"
-        android:letterSpacing="0.12"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="4dp"/>
-
-    <!-- Nombre de la rutina -->
-    <TextView
-        android:id="@+id/tvRutinaNombreDialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="PECHO Y ESPALDA"
-        android:textColor="@color/axf_text_primary"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="24dp"/>
-
-    <!-- Separador naranja -->
+    <!-- Separador -->
     <View
-        android:layout_width="50dp"
-        android:layout_height="3dp"
-        android:background="@color/axf_orange"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="20dp"/>
-
-    <!-- Subtítulo -->
-    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Selecciona el bloque muscular:"
-        android:textColor="@color/axf_text_secondary"
-        android:textSize="13sp"
-        android:gravity="center"
+        android:layout_height="1dp"
+        android:background="@color/axf_bg_surface"
         android:layout_marginBottom="16dp"/>
 
-    <!-- Botones de grupos (se llenan dinámicamente) -->
+    <!-- Pregunta -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="¿Qué vas a trabajar hoy?"
+        android:textColor="@color/axf_text_secondary"
+        android:textSize="12sp"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Botones de bloques (dinámicos) -->
     <LinearLayout
         android:id="@+id/containerGrupos"
         android:layout_width="match_parent"
