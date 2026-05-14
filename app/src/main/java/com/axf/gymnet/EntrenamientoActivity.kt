@@ -162,15 +162,15 @@ class EntrenamientoActivity : AppCompatActivity() {
     ): View {
         val fila = LayoutInflater.from(this).inflate(R.layout.item_serie_fila, null)
 
-        val tvNumero  = fila.findViewById<TextView>(R.id.tvSerieNum)
+        val tvNumero   = fila.findViewById<TextView>(R.id.tvSerieNum)
         val tvAnterior = fila.findViewById<TextView>(R.id.tvAnterior)
-        val etPeso    = fila.findViewById<EditText>(R.id.etPesoSerie)
-        val etReps    = fila.findViewById<EditText>(R.id.etRepsSerie)
-        val btnCheck  = fila.findViewById<ImageButton>(R.id.btnCheckSerie)
+        val etPeso     = fila.findViewById<EditText>(R.id.etPesoSerie)
+        val etReps     = fila.findViewById<EditText>(R.id.etRepsSerie)
+        val btnCheck   = fila.findViewById<ImageButton>(R.id.btnCheckSerie)
 
         tvNumero.text = "${idx + 1}"
 
-        // "Anterior": muestra el historial real de la sesión pasada (o preset si no hay)
+        // "Sesión ant.": muestra el historial real de la sesión pasada (o preset si no hay)
         val hist = ej.historial_reciente?.find { it.num_serie == idx + 1 }
         if (hist != null) {
             val pesoHist = if ((hist.peso_levantado ?: 0.0) > 0)
@@ -182,11 +182,11 @@ class EntrenamientoActivity : AppCompatActivity() {
             tvAnterior.text = "$pesoBase x ${ej.repeticiones}"
         }
 
-        // Placeholders: si hay historial, usarlo como hint para comparar
+        // Placeholders: si hay historial, usarlo como hint para comparar visualmente
         if (hist != null) {
-            val pesoHint = if ((hist.peso_levantado ?: 0.0) > 0) "${hist.peso_levantado!!.toInt()}" else ""
-            val repsHint = hist.reps_realizadas?.toString() ?: "${ej.repeticiones}"
-            etPeso.hint = pesoHint.ifEmpty { "kg" }
+            val pesoHint = if ((hist.peso_levantado ?: 0.0) > 0) "${hist.peso_levantado!!.toInt()}" else "kg"
+            val repsHint = hist.reps_realizadas?.toString() ?: "reps"
+            etPeso.hint = pesoHint
             etReps.hint = repsHint
         } else {
             etPeso.hint = "kg"
@@ -270,7 +270,8 @@ class EntrenamientoActivity : AppCompatActivity() {
     private fun guardarSerieBackend(idEjercicio: Int, numSerie: Int, serie: SerieState) {
         lifecycleScope.launch {
             try {
-                RetrofitClient.instance.guardarSerie(
+                android.util.Log.d("AXF_ENTRENO", "Guardando: ej=$idEjercicio serie=$numSerie peso=${serie.pesoKg} reps=${serie.reps}")
+                val response = RetrofitClient.instance.guardarSerie(
                     "Bearer $token",
                     GuardarSerieRequest(
                         id_rutina_ejercicio = idEjercicio,
@@ -279,7 +280,29 @@ class EntrenamientoActivity : AppCompatActivity() {
                         reps_realizadas     = serie.reps
                     )
                 )
-            } catch (_: Exception) { /* silencioso — no interrumpir el flujo */ }
+                if (response.isSuccessful) {
+                    android.util.Log.d("AXF_ENTRENO", "Serie $numSerie guardada OK")
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("AXF_ENTRENO", "Error ${response.code()}: $errorBody")
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@EntrenamientoActivity,
+                            "⚠️ No se pudo guardar la serie (${response.code()})",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("AXF_ENTRENO", "Excepción: ${e.message}", e)
+                runOnUiThread {
+                    Toast.makeText(
+                        this@EntrenamientoActivity,
+                        "⚠️ Sin conexión al guardar serie",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
     }
 
@@ -294,8 +317,8 @@ class EntrenamientoActivity : AppCompatActivity() {
 
         dialogo.show()
 
-        val tvCuenta   = dialogo.findViewById<TextView>(R.id.tvCuentaAtras)
-        val btnSaltar  = dialogo.findViewById<TextView>(R.id.btnSaltarDescanso)
+        val tvCuenta    = dialogo.findViewById<TextView>(R.id.tvCuentaAtras)
+        val btnSaltar   = dialogo.findViewById<TextView>(R.id.btnSaltarDescanso)
         val progressBar = dialogo.findViewById<ProgressBar>(R.id.progressDescanso)
 
         progressBar?.max = segundos
