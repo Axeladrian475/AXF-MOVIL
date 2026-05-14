@@ -60,33 +60,50 @@
                         android:layout_marginTop="2dp"/>
                 </LinearLayout>
 
-                <!-- Días restantes (chip oscuro con ícono de llama) -->
+                <!-- Días restantes -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="@color/axf_bg_surface"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:paddingTop="5dp"
-                    android:paddingBottom="5dp">
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_fire"
-                        android:contentDescription="Días restantes"/>
-
-                    <TextView
-                        android:id="@+id/tvDiasRestantes"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="-- Días"
-                        android:textColor="@color/axf_text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:layout_marginStart="5dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@color/axf_bg_surface"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        app:cornerRadius="6dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_fire"
+                            android:contentDescription="Días restantes"/>
+
+                        <TextView
+                            android:id="@+id/tvDiasRestantes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-- Días"
+                            android:textColor="@color/axf_text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:layout_marginStart="5dp"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="restantes de tu suscripción"
+                        android:textColor="@color/axf_text_secondary"
+                        android:textSize="8sp"
+                        android:layout_marginTop="2dp"
+                        android:gravity="center" />
                 </LinearLayout>
 
                 <!-- Botón Cerrar Sesión -->
