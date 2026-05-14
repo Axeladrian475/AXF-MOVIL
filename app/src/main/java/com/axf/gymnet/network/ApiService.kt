@@ -6,6 +6,7 @@ import com.axf.gymnet.data.ChatConversacion
 import com.axf.gymnet.data.ChatMensaje
 import com.axf.gymnet.data.CrearReporteRequest
 import com.axf.gymnet.data.CrearReporteResponse
+import com.axf.gymnet.data.DescansoRequest
 import com.axf.gymnet.data.DietaDetalle
 import com.axf.gymnet.data.DietaResumen
 import com.axf.gymnet.data.EnviarMensajeRequest
@@ -30,6 +31,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -48,6 +50,12 @@ interface ApiService {
     suspend fun getSuscripcion(
         @Header("Authorization") token: String
     ): Response<SuscripcionResponse>
+
+    @PUT("api/suscriptores/movil/descanso")
+    suspend fun actualizarDescanso(
+        @Header("Authorization") token: String,
+        @Body request: DescansoRequest
+    ): Response<Unit>
 
     @GET("api/suscriptores/movil/rutinas")
     suspend fun getRutinas(

@@ -230,6 +230,157 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- TARJETA RACHA DE ASISTENCIA -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/axf_bg_card"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Fila superior: llama + número + estado -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="14dp">
+
+                            <ImageView
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:src="@drawable/ic_fire"
+                                android:contentDescription="Racha"
+                                android:layout_marginEnd="14dp"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvRachaDias"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/axf_orange"
+                                    android:textSize="40sp"
+                                    android:textStyle="bold"
+                                    android:lineSpacingExtra="-6dp"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Días de racha"
+                                    android:textColor="@color/axf_text_secondary"
+                                    android:textSize="12sp"/>
+                            </LinearLayout>
+
+                            <!-- Badge de estado -->
+                            <TextView
+                                android:id="@+id/tvRachaEstado"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Sin racha"
+                                android:textColor="@color/axf_text_secondary"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:background="@color/axf_bg_surface"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:paddingTop="5dp"
+                                android:paddingBottom="5dp"/>
+                        </LinearLayout>
+
+                        <!-- Separador -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/axf_divider"
+                            android:layout_marginBottom="12dp"/>
+
+                        <!-- Días de descanso -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Días de descanso"
+                                    android:textColor="@color/axf_text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Faltas permitidas por semana"
+                                    android:textColor="@color/axf_text_secondary"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
+
+                            <!-- Botón − -->
+                            <Button
+                                android:id="@+id/btnDescansoMenos"
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:text="−"
+                                android:textColor="@color/axf_text_primary"
+                                android:textSize="20sp"
+                                android:backgroundTint="@color/axf_bg_surface"
+                                android:padding="0dp"
+                                android:stateListAnimator="@null"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"/>
+
+                            <TextView
+                                android:id="@+id/tvDiasDescanso"
+                                android:layout_width="44dp"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="@color/axf_text_primary"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:layout_marginStart="4dp"
+                                android:layout_marginEnd="4dp"/>
+
+                            <!-- Botón + -->
+                            <Button
+                                android:id="@+id/btnDescansoMas"
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:text="+"
+                                android:textColor="@color/axf_orange"
+                                android:textSize="20sp"
+                                android:backgroundTint="@color/axf_bg_surface"
+                                android:padding="0dp"
+                                android:stateListAnimator="@null"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
                 <!-- TARJETA AFORO / HORARIOS PICO -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"

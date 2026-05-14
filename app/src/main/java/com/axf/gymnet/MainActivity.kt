@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.axf.gymnet.data.DescansoRequest
 import com.axf.gymnet.network.RetrofitClient
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
@@ -28,9 +29,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvChatBadge: TextView
     private var token: String = ""
 
-    // ── Auto-refresh aforo ───────────────────────────────────────────────────
-    private val aforoHandler  = Handler(Looper.getMainLooper())
-    private val AFORO_INTERVAL = 30_000L  // 30 segundos
+    // Auto-refresh aforo
+    private val aforoHandler   = Handler(Looper.getMainLooper())
+    private val AFORO_INTERVAL = 30_000L
 
     private val aforoRunnable = object : Runnable {
         override fun run() {
@@ -39,7 +40,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ── Views de aforo ───────────────────────────────────────────────────────
+    // Views de racha
+    private lateinit var tvRachaDias:      TextView
+    private lateinit var tvRachaEstado:    TextView
+    private lateinit var tvDiasDescanso:   TextView
+    private lateinit var btnDescansoMenos: Button
+    private lateinit var btnDescansoMas:   Button
+    private var diasDescanso: Int = 0
+
+    // Views de aforo
     private lateinit var tvAforo:       TextView
     private lateinit var tvAforoPct:    TextView
     private lateinit var tvAforoHora:   TextView
@@ -56,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         token = prefs.getString("token", "") ?: ""
 
-        // ── Referencias UI ───────────────────────────────────────────────────
+        // Referencias UI
         val tvNombreUsuario = findViewById<TextView>(R.id.tvNombreUsuario)
         val tvDias          = findViewById<TextView>(R.id.tvDiasRestantes)
         val tvEstado        = findViewById<TextView>(R.id.tvEstadoSuscripcion)
@@ -66,26 +75,44 @@ class MainActivity : AppCompatActivity() {
         val barChart        = findViewById<BarChart>(R.id.barChart)
         tvChatBadge         = findViewById(R.id.tvChatBadge)
 
-        // ── Referencias aforo ────────────────────────────────────────────────
+        // Referencias racha
+        tvRachaDias      = findViewById(R.id.tvRachaDias)
+        tvRachaEstado    = findViewById(R.id.tvRachaEstado)
+        tvDiasDescanso   = findViewById(R.id.tvDiasDescanso)
+        btnDescansoMenos = findViewById(R.id.btnDescansoMenos)
+        btnDescansoMas   = findViewById(R.id.btnDescansoMas)
+        diasDescanso     = prefs.getInt("diasDescanso", 0)
+        val rachaSaved   = prefs.getInt("rachaDias", 0)
+        tvRachaDias.text    = rachaSaved.toString()
+        tvDiasDescanso.text = diasDescanso.toString()
+        actualizarEstadoRacha(rachaSaved)
+        btnDescansoMenos.setOnClickListener {
+            if (diasDescanso > 0) { diasDescanso--; tvDiasDescanso.text = diasDescanso.toString(); guardarDiasDescanso(diasDescanso) }
+        }
+        btnDescansoMas.setOnClickListener {
+            if (diasDescanso < 6) { diasDescanso++; tvDiasDescanso.text = diasDescanso.toString(); guardarDiasDescanso(diasDescanso) }
+        }
+
+        // Referencias aforo
         tvAforo       = findViewById(R.id.tvAforo)
         tvAforoPct    = findViewById(R.id.tvAforoPct)
         tvAforoHora   = findViewById(R.id.tvAforoHora)
         progressAforo = findViewById(R.id.progressAforo)
         btnAforo      = findViewById(R.id.btnActualizarAforo)
 
-        // ── Nombre del usuario ───────────────────────────────────────────────
+        // Nombre del usuario
         val nombreGuardado   = prefs.getString("userName",    "") ?: ""
         val apellidoGuardado = prefs.getString("userApellido","") ?: ""
         if (nombreGuardado.isNotEmpty()) {
             tvNombreUsuario.text = "Hola, $nombreGuardado $apellidoGuardado".trim()
         }
 
-        // ── Estado inicial desde prefs ───────────────────────────────────────
+        // Estado inicial desde prefs
         val suscripcionActiva = prefs.getBoolean("suscripcionActiva", false)
         val fechaGuardada     = prefs.getString("fechaVencimiento",  "") ?: ""
         actualizarUIEstado(suscripcionActiva, fechaGuardada, ivEstadoIcono, tvEstado, tvVencimiento, tvDias)
 
-        // ── Nav bar ──────────────────────────────────────────────────────────
+        // Nav bar
         findViewById<View>(R.id.navEntreno).setOnClickListener  { startActivity(Intent(this, RutinasActivity::class.java)) }
         findViewById<View>(R.id.navDieta).setOnClickListener    { startActivity(Intent(this, DietasActivity::class.java)) }
         findViewById<View>(R.id.navReportar).setOnClickListener { startActivity(Intent(this, ReportarActivity::class.java)) }
@@ -94,7 +121,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListaActivity::class.java))
         }
 
-        // ── Cargar suscripción REAL ──────────────────────────────────────────
+        // Cargar suscripción REAL (incluye racha)
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
@@ -103,11 +130,20 @@ class MainActivity : AppCompatActivity() {
                         val data = resp.body()!!
                         actualizarUIEstado(data.activa, data.vencimiento_final ?: "", ivEstadoIcono, tvEstado, tvVencimiento, tvDias)
                         val tipoPlan = data.nombre_plan ?: ""
-                        tvTipoPlan.text      = tipoPlan
+                        tvTipoPlan.text       = tipoPlan
                         tvTipoPlan.visibility = if (tipoPlan.isNotEmpty()) View.VISIBLE else View.GONE
+                        val rachaDias = data.racha_dias
+                        diasDescanso  = data.dias_descanso_semana
+                        runOnUiThread {
+                            tvRachaDias.text    = rachaDias.toString()
+                            tvDiasDescanso.text = diasDescanso.toString()
+                            actualizarEstadoRacha(rachaDias)
+                        }
                         prefs.edit()
                             .putBoolean("suscripcionActiva", data.activa)
                             .putString("fechaVencimiento",  data.vencimiento_final)
+                            .putInt("rachaDias",    rachaDias)
+                            .putInt("diasDescanso", diasDescanso)
                             .apply()
                     }
                 } catch (_: Exception) {}
@@ -116,10 +152,10 @@ class MainActivity : AppCompatActivity() {
 
         setupBarChart(barChart)
 
-        // ── Botón manual de aforo ────────────────────────────────────────────
+        // Botón manual de aforo
         btnAforo.setOnClickListener { cargarAforo() }
 
-        // ── Cerrar sesión ────────────────────────────────────────────────────
+        // Cerrar sesión
         findViewById<ImageView>(R.id.btnCerrarSesion).setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Cerrar sesión")
@@ -138,9 +174,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
+    // Badge dinámico de estado de racha
+    private fun actualizarEstadoRacha(dias: Int) {
+        val (texto, color) = when {
+            dias >= 30 -> Pair("🏆 ¡Leyenda!",   getColor(android.R.color.holo_orange_light))
+            dias >= 14 -> Pair("🔥 ¡En racha!",  getColor(android.R.color.holo_orange_light))
+            dias >= 7  -> Pair("💪 ¡Constante!", getColor(android.R.color.holo_green_light))
+            dias >= 1  -> Pair("⚡ Iniciando",   getColor(android.R.color.holo_blue_light))
+            else       -> Pair("Sin racha",      getColor(R.color.axf_text_secondary))
+        }
+        tvRachaEstado.text = texto
+        tvRachaEstado.setTextColor(color)
+    }
+
+    // Sincroniza días de descanso con el servidor
+    private fun guardarDiasDescanso(dias: Int) {
+        getSharedPreferences("axf_prefs", MODE_PRIVATE).edit().putInt("diasDescanso", dias).apply()
+        if (token.isEmpty()) return
+        lifecycleScope.launch {
+            try { RetrofitClient.instance.actualizarDescanso("Bearer $token", DescansoRequest(dias)) }
+            catch (_: Exception) {}
+        }
+    }
+
     // Cargar aforo desde la API
-    // ────────────────────────────────────────────────────────────────────────
     private fun cargarAforo() {
         if (token.isEmpty()) return
         btnAforo.isEnabled = false
@@ -163,9 +220,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
     // Actualizar UI del aforo
-    // ────────────────────────────────────────────────────────────────────────
     private fun actualizarUIAforo(dentro: Int, max: Int, pct: Int) {
         tvAforo.text    = "$dentro / $max personas"
         tvAforoPct.text = "$pct%"
@@ -180,21 +235,14 @@ class MainActivity : AppCompatActivity() {
         progressAforo.progressTintList = android.content.res.ColorStateList.valueOf(color)
         progressAforo.progress = pct
 
-        // Hora de actualización
         val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         tvAforoHora.text = "Última actualización: ${sdf.format(Date())}"
     }
 
-    // ────────────────────────────────────────────────────────────────────────
     // Lifecycle: iniciar/detener auto-refresh
-    // ────────────────────────────────────────────────────────────────────────
     override fun onResume() {
         super.onResume()
-
-        // Cargar aforo inmediatamente y programar refresh cada 30s
         aforoHandler.post(aforoRunnable)
-
-        // Badge de chat
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
@@ -217,7 +265,6 @@ class MainActivity : AppCompatActivity() {
         aforoHandler.removeCallbacks(aforoRunnable)
     }
 
-    // ────────────────────────────────────────────────────────────────────────
     private fun actualizarUIEstado(
         activa: Boolean, fecha: String,
         icono: ImageView, tvEstado: TextView,
