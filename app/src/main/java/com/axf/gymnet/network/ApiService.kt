@@ -1,5 +1,6 @@
 package com.axf.gymnet.network
 
+import com.axf.gymnet.data.AforoResponse
 import com.axf.gymnet.data.AtencionPreviaResponse
 import com.axf.gymnet.data.ChatConversacion
 import com.axf.gymnet.data.ChatMensaje
@@ -37,6 +38,11 @@ interface ApiService {
 
     @POST("api/suscriptores/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @GET("api/suscriptores/movil/aforo")
+    suspend fun getAforo(
+        @Header("Authorization") token: String
+    ): Response<AforoResponse>
 
     @GET("api/suscriptores/movil/suscripcion")
     suspend fun getSuscripcion(

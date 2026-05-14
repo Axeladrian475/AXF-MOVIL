@@ -42,6 +42,7 @@
     <color name="axf_bg_surface">#1A2A3F</color>
     <color name="axf_bg_input">#12243A</color>
     <color name="axf_bg_input_stroke">#2A3F56</color>
+    <color name="axf_divider">#2A3F56</color>
 
     <!-- ── Acento / Marca ── -->
     <color name="axf_orange">#F26A21</color>

@@ -268,28 +268,87 @@
                             android:layout_width="match_parent"
                             android:layout_height="180dp"/>
 
-                        <Button
-                            android:id="@+id/btnActualizarAforo"
+                        <!-- Separador -->
+                        <View
                             android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Actualizar aforo actual"
-                            android:backgroundTint="@color/axf_success"
-                            android:textColor="@color/axf_text_primary"
-                            android:textStyle="bold"
-                            android:textSize="14sp"
+                            android:layout_height="1dp"
+                            android:background="@color/axf_divider"
                             android:layout_marginTop="12dp"
-                            android:stateListAnimator="@null"/>
+                            android:layout_marginBottom="12dp"/>
 
+                        <!-- Título aforo en tiempo real -->
                         <TextView
-                            android:id="@+id/tvAforo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📊 Aforo en tiempo real"
+                            android:textColor="@color/axf_text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"/>
+
+                        <!-- Fila: personas / capacidad + porcentaje -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:id="@+id/tvAforo"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="— / — personas"
+                                android:textColor="@color/axf_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:visibility="visible"/>
+
+                            <TextView
+                                android:id="@+id/tvAforoPct"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0%"
+                                android:textColor="@color/axf_orange"
+                                android:textSize="15sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <!-- Barra de progreso aforo -->
+                        <ProgressBar
+                            android:id="@+id/progressAforo"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressTint="@color/axf_orange"
+                            android:progressBackgroundTint="@color/axf_divider"
+                            android:layout_marginBottom="4dp"/>
+
+                        <!-- Última actualización -->
+                        <TextView
+                            android:id="@+id/tvAforoHora"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text=""
-                            android:textColor="@color/axf_text_primary"
+                            android:textColor="@color/axf_text_tertiary"
+                            android:textSize="10sp"
+                            android:layout_marginBottom="10dp"/>
+
+                        <!-- Botón actualizar -->
+                        <Button
+                            android:id="@+id/btnActualizarAforo"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:text="↻ Actualizar aforo"
+                            android:backgroundTint="@color/axf_bg_primary"
+                            android:textColor="@color/axf_orange"
+                            android:textStyle="bold"
                             android:textSize="13sp"
-                            android:gravity="center"
-                            android:layout_marginTop="8dp"
-                            android:visibility="gone"/>
+                            android:layout_marginTop="4dp"
+                            android:stateListAnimator="@null"/>
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
