@@ -6,7 +6,8 @@ data class SuscripcionResponse(
     val nombre_plan: String? = null,
     val totales: TotalesSesiones? = null,
     val racha_dias: Int = 0,
-    val dias_descanso_semana: Int = 0
+    val dias_descanso_semana: Int = 0,
+    val dias_restantes: Int = 0
 )
 
 data class TotalesSesiones(

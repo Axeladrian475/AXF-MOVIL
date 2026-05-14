@@ -108,9 +108,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Estado inicial desde prefs
-        val suscripcionActiva = prefs.getBoolean("suscripcionActiva", false)
-        val fechaGuardada     = prefs.getString("fechaVencimiento",  "") ?: ""
-        actualizarUIEstado(suscripcionActiva, fechaGuardada, ivEstadoIcono, tvEstado, tvVencimiento, tvDias)
+        val suscripcionActiva  = prefs.getBoolean("suscripcionActiva", false)
+        val fechaGuardada      = prefs.getString("fechaVencimiento",  "") ?: ""
+        val diasRestantesGuard = prefs.getInt("diasRestantes", 0)
+        tvDias.text = if (suscripcionActiva && diasRestantesGuard > 0) "$diasRestantesGuard Días" else "-- Días"
+        actualizarUIEstado(suscripcionActiva, fechaGuardada, ivEstadoIcono, tvEstado, tvVencimiento)
 
         // Nav bar
         findViewById<View>(R.id.navEntreno).setOnClickListener  { startActivity(Intent(this, RutinasActivity::class.java)) }
@@ -121,17 +123,23 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListaActivity::class.java))
         }
 
-        // Cargar suscripción REAL (incluye racha)
+        // Cargar suscripción REAL (incluye racha y dias_restantes)
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
                     val resp = RetrofitClient.instance.getSuscripcion("Bearer $token")
                     if (resp.isSuccessful) {
                         val data = resp.body()!!
-                        actualizarUIEstado(data.activa, data.vencimiento_final ?: "", ivEstadoIcono, tvEstado, tvVencimiento, tvDias)
+                        actualizarUIEstado(data.activa, data.vencimiento_final ?: "", ivEstadoIcono, tvEstado, tvVencimiento)
                         val tipoPlan = data.nombre_plan ?: ""
                         tvTipoPlan.text       = tipoPlan
                         tvTipoPlan.visibility = if (tipoPlan.isNotEmpty()) View.VISIBLE else View.GONE
+                        // Dias restantes del servidor (DATEDIFF en MySQL, sin problemas de timezone)
+                        val diasRest = data.dias_restantes
+                        runOnUiThread {
+                            tvDias.text = "$diasRest Días"
+                        }
+                        // Racha
                         val rachaDias = data.racha_dias
                         diasDescanso  = data.dias_descanso_semana
                         runOnUiThread {
@@ -142,8 +150,9 @@ class MainActivity : AppCompatActivity() {
                         prefs.edit()
                             .putBoolean("suscripcionActiva", data.activa)
                             .putString("fechaVencimiento",  data.vencimiento_final)
-                            .putInt("rachaDias",    rachaDias)
-                            .putInt("diasDescanso", diasDescanso)
+                            .putInt("diasRestantes", diasRest)
+                            .putInt("rachaDias",     rachaDias)
+                            .putInt("diasDescanso",  diasDescanso)
                             .apply()
                     }
                 } catch (_: Exception) {}
@@ -268,32 +277,20 @@ class MainActivity : AppCompatActivity() {
     private fun actualizarUIEstado(
         activa: Boolean, fecha: String,
         icono: ImageView, tvEstado: TextView,
-        tvVence: TextView, tvDias: TextView
+        tvVence: TextView
     ) {
         if (activa) {
             tvEstado.text = "ACTIVA"
             tvEstado.setTextColor(getColor(android.R.color.holo_green_light))
             icono.setImageResource(R.drawable.ic_check_circle)
             icono.setColorFilter(getColor(android.R.color.holo_green_light))
-            if (fecha.isNotEmpty()) {
-                val fechaCorta = fecha.take(10)
-                tvVence.text = "Vence: $fechaCorta"
-                try {
-                    val sdf   = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val vence = sdf.parse(fechaCorta)
-                    if (vence != null) {
-                        val dias = ((vence.time - Date().time) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
-                        tvDias.text = "$dias Días"
-                    }
-                } catch (_: Exception) {}
-            }
+            if (fecha.isNotEmpty()) tvVence.text = "Vence: ${fecha.take(10)}"
         } else {
             tvEstado.text = "INACTIVA"
             tvEstado.setTextColor(getColor(android.R.color.holo_red_light))
             icono.setImageResource(R.drawable.ic_lock)
             icono.setColorFilter(getColor(android.R.color.holo_red_light))
             tvVence.text = "Sin suscripción activa"
-            tvDias.text  = "0 Días"
         }
     }
 
