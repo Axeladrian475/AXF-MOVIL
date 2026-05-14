@@ -110,8 +110,7 @@ class MainActivity : AppCompatActivity() {
         // Estado inicial desde prefs
         val suscripcionActiva  = prefs.getBoolean("suscripcionActiva", false)
         val fechaGuardada      = prefs.getString("fechaVencimiento",  "") ?: ""
-        val diasRestantesGuard = prefs.getInt("diasRestantes", 0)
-        tvDias.text = if (suscripcionActiva && diasRestantesGuard > 0) "$diasRestantesGuard Días" else "-- Días"
+        tvDias.text = calcularDiasRestantes(fechaGuardada)
         actualizarUIEstado(suscripcionActiva, fechaGuardada, ivEstadoIcono, tvEstado, tvVencimiento)
 
         // Nav bar
@@ -123,36 +122,32 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListaActivity::class.java))
         }
 
-        // Cargar suscripción REAL (incluye racha y dias_restantes)
+        // Cargar suscripción REAL
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
                     val resp = RetrofitClient.instance.getSuscripcion("Bearer $token")
                     if (resp.isSuccessful) {
                         val data = resp.body()!!
-                        actualizarUIEstado(data.activa, data.vencimiento_final ?: "", ivEstadoIcono, tvEstado, tvVencimiento)
+                        val fechaVence = data.vencimiento_final ?: ""
+                        actualizarUIEstado(data.activa, fechaVence, ivEstadoIcono, tvEstado, tvVencimiento)
                         val tipoPlan = data.nombre_plan ?: ""
                         tvTipoPlan.text       = tipoPlan
                         tvTipoPlan.visibility = if (tipoPlan.isNotEmpty()) View.VISIBLE else View.GONE
-                        // Dias restantes del servidor (DATEDIFF en MySQL, sin problemas de timezone)
-                        val diasRest = data.dias_restantes
-                        runOnUiThread {
-                            tvDias.text = "$diasRest Días"
-                        }
+                        // Calcular días restantes en el cliente a partir de la fecha
+                        val diasText = calcularDiasRestantes(fechaVence)
+                        tvDias.text = diasText
                         // Racha
                         val rachaDias = data.racha_dias
                         diasDescanso  = data.dias_descanso_semana
-                        runOnUiThread {
-                            tvRachaDias.text    = rachaDias.toString()
-                            tvDiasDescanso.text = diasDescanso.toString()
-                            actualizarEstadoRacha(rachaDias)
-                        }
+                        tvRachaDias.text    = rachaDias.toString()
+                        tvDiasDescanso.text = diasDescanso.toString()
+                        actualizarEstadoRacha(rachaDias)
                         prefs.edit()
                             .putBoolean("suscripcionActiva", data.activa)
-                            .putString("fechaVencimiento",  data.vencimiento_final)
-                            .putInt("diasRestantes", diasRest)
-                            .putInt("rachaDias",     rachaDias)
-                            .putInt("diasDescanso",  diasDescanso)
+                            .putString("fechaVencimiento",  fechaVence)
+                            .putInt("rachaDias",    rachaDias)
+                            .putInt("diasDescanso", diasDescanso)
                             .apply()
                     }
                 } catch (_: Exception) {}
@@ -181,6 +176,22 @@ class MainActivity : AppCompatActivity() {
                 .setNegativeButton("Cancelar", null)
                 .show()
         }
+    }
+
+    // Calcula días restantes a partir de "YYYY-MM-DD" en el dispositivo
+    private fun calcularDiasRestantes(fecha: String): String {
+        if (fecha.isEmpty()) return "-- Días"
+        return try {
+            val sdf   = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            sdf.isLenient = false
+            val vence = sdf.parse(fecha.take(10)) ?: return "-- Días"
+            val hoy   = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0);      set(Calendar.MILLISECOND, 0)
+            }.time
+            val dias  = ((vence.time - hoy.time) / (1000L * 60 * 60 * 24)).toInt()
+            if (dias >= 0) "$dias Días" else "0 Días"
+        } catch (_: Exception) { "-- Días" }
     }
 
     // Badge dinámico de estado de racha
