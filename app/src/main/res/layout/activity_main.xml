@@ -307,6 +307,54 @@
                             android:background="@color/axf_divider"
                             android:layout_marginBottom="12dp"/>
 
+                        <!-- Puntos de racha -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Puntos por racha"
+                                    android:textColor="@color/axf_text_primary"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/tvRachaProgresoMes"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0/30 días para bonus mensual"
+                                    android:textColor="@color/axf_text_secondary"
+                                    android:textSize="11sp"/>
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvRachaPuntosDia"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="⭐ +10 pts/día"
+                                android:textColor="@color/axf_orange"
+                                android:textSize="13sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <!-- Separador 2 -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/axf_divider"
+                            android:layout_marginBottom="12dp"/>
+
                         <!-- Días de descanso -->
                         <LinearLayout
                             android:layout_width="match_parent"

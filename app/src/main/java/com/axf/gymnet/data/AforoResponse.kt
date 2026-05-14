@@ -6,4 +6,5 @@ data class AforoResponse(
     val nombre_sucursal:  String,
     val actualizado_en:   String?,
     val porcentaje:       Int,
+    val grafica:          List<Int>? = null
 )

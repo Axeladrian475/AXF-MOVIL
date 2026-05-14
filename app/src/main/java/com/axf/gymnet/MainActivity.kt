@@ -41,11 +41,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Views de racha
-    private lateinit var tvRachaDias:      TextView
-    private lateinit var tvRachaEstado:    TextView
-    private lateinit var tvDiasDescanso:   TextView
-    private lateinit var btnDescansoMenos: Button
-    private lateinit var btnDescansoMas:   Button
+    private lateinit var tvRachaDias:        TextView
+    private lateinit var tvRachaEstado:      TextView
+    private lateinit var tvDiasDescanso:     TextView
+    private lateinit var tvRachaProgresoMes: TextView
+    private lateinit var btnDescansoMenos:   Button
+    private lateinit var btnDescansoMas:     Button
     private var diasDescanso: Int = 0
 
     // Views de aforo
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvAforoHora:   TextView
     private lateinit var progressAforo: ProgressBar
     private lateinit var btnAforo:      Button
+    private lateinit var tvPuntos:      TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,9 +78,10 @@ class MainActivity : AppCompatActivity() {
         tvChatBadge         = findViewById(R.id.tvChatBadge)
 
         // Referencias racha
-        tvRachaDias      = findViewById(R.id.tvRachaDias)
-        tvRachaEstado    = findViewById(R.id.tvRachaEstado)
-        tvDiasDescanso   = findViewById(R.id.tvDiasDescanso)
+        tvRachaDias        = findViewById(R.id.tvRachaDias)
+        tvRachaEstado      = findViewById(R.id.tvRachaEstado)
+        tvDiasDescanso     = findViewById(R.id.tvDiasDescanso)
+        tvRachaProgresoMes = findViewById(R.id.tvRachaProgresoMes)
         btnDescansoMenos = findViewById(R.id.btnDescansoMenos)
         btnDescansoMas   = findViewById(R.id.btnDescansoMas)
         diasDescanso     = prefs.getInt("diasDescanso", 0)
@@ -99,6 +102,7 @@ class MainActivity : AppCompatActivity() {
         tvAforoHora   = findViewById(R.id.tvAforoHora)
         progressAforo = findViewById(R.id.progressAforo)
         btnAforo      = findViewById(R.id.btnActualizarAforo)
+        tvPuntos      = findViewById(R.id.tvPuntos)
 
         // Nombre del usuario
         val nombreGuardado   = prefs.getString("userName",    "") ?: ""
@@ -143,6 +147,8 @@ class MainActivity : AppCompatActivity() {
                         tvRachaDias.text    = rachaDias.toString()
                         tvDiasDescanso.text = diasDescanso.toString()
                         actualizarEstadoRacha(rachaDias)
+                        // Puntos del suscriptor
+                        tvPuntos.text = "${data.puntos} Pts"
                         prefs.edit()
                             .putBoolean("suscripcionActiva", data.activa)
                             .putString("fechaVencimiento",  fechaVence)
@@ -154,7 +160,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        setupBarChart(barChart)
+        setupBarChart(barChart, listOf(0f, 0f, 0f, 0f, 0f, 0f))
 
         // Botón manual de aforo
         btnAforo.setOnClickListener { cargarAforo() }
@@ -205,6 +211,15 @@ class MainActivity : AppCompatActivity() {
         }
         tvRachaEstado.text = texto
         tvRachaEstado.setTextColor(color)
+
+        // Progreso hacia el bonus mensual
+        val diasEnMes = dias % 30
+        val restantesMes = 30 - diasEnMes
+        tvRachaProgresoMes.text = if (diasEnMes == 0 && dias > 0) {
+            "🏆 ¡Bonus de +30 pts desbloqueado!"
+        } else {
+            "${diasEnMes}/30 días — faltan $restantesMes para bonus +30 pts"
+        }
     }
 
     // Sincroniza días de descanso con el servidor
@@ -228,7 +243,11 @@ class MainActivity : AppCompatActivity() {
                 val resp = RetrofitClient.instance.getAforo("Bearer $token")
                 if (resp.isSuccessful) {
                     val a = resp.body()!!
-                    runOnUiThread { actualizarUIAforo(a.personas_dentro, a.capacidad_maxima, a.porcentaje) }
+                    val graficaFloats = a.grafica?.map { it.toFloat() } ?: listOf(0f, 0f, 0f, 0f, 0f, 0f)
+                    runOnUiThread { 
+                        actualizarUIAforo(a.personas_dentro, a.capacidad_maxima, a.porcentaje) 
+                        setupBarChart(findViewById(R.id.barChart), graficaFloats)
+                    }
                 } else {
                     runOnUiThread { tvAforoHora.text = "Error al obtener aforo (${resp.code()})" }
                 }
@@ -316,9 +335,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupBarChart(chart: BarChart) {
+    private fun setupBarChart(chart: BarChart, valores: List<Float>) {
         val horas   = listOf("6am", "9am", "12pm", "6pm", "8pm", "10pm")
-        val valores = listOf(40f, 25f, 30f, 55f, 80f, 20f)
         val entries = valores.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
         val dataSet = BarDataSet(entries, "").apply {
             colors = valores.map { v ->

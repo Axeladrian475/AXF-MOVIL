@@ -27,7 +27,7 @@ object RetrofitClient {
      *   android:usesCleartextTraffic="true"  en el AndroidManifest.xml
      * ─────────────────────────────────────────────────────────────────────────
      */
-    const val BASE_URL = "http://192.168.1.20:3001/"   // ← CAMBIA ESTO
+    const val BASE_URL = "http://10.0.2.2:3001/"   // emulador Android Studio → localhost del PC
 
     // OkHttpClient con timeouts extendidos para soportar upload de imágenes
     private val okHttpClient = OkHttpClient.Builder()
