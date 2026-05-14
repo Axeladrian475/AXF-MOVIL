@@ -4,18 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
+import com.axf.gymnet.data.BloqueRutina
 import com.axf.gymnet.data.EjercicioRutina
 import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.network.RetrofitClient
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
@@ -89,7 +87,6 @@ class RutinasActivity : AppCompatActivity() {
         rutinas: List<RutinaResponse>
     ) {
         val inflater = layoutInflater
-        val baseUrl  = RetrofitClient.BASE_URL.trimEnd('/')
 
         for (rutina in rutinas) {
             if (rutina.ejercicios.isEmpty()) continue
@@ -104,87 +101,109 @@ class RutinasActivity : AppCompatActivity() {
                 ?: "RUTINA ${rutina.id_rutina}"
 
             header.findViewById<TextView>(R.id.tvRutinaNombre).text  = nombreRutina
+            // Si hay múltiples bloques, mostrar cuántos bloques tiene. Si no, cantidad de ejercicios
+            val numBloques = rutina.bloques.size
             header.findViewById<TextView>(R.id.tvRutinaCount).text   =
-                "${rutina.ejercicios.size} ejercicios"
+                if (numBloques > 1) "$numBloques bloques" else "${rutina.ejercicios.size} ejercicios"
             header.findViewById<TextView>(R.id.tvRutinaEntrenador).text =
                 "Asignada por: ${rutina.entrenador}"
 
-            // Botón ÚNICO por rutina — lanza EntrenamientoActivity con la rutina completa
+            // Botón ÚNICO por rutina — abre selector de grupo si hay varios, si no arranca directo
             header.findViewById<Button>(R.id.btnEmpezarRutina).setOnClickListener {
-                val intent = Intent(this, EntrenamientoActivity::class.java)
-                intent.putExtra("rutina_id",   rutina.id_rutina)
-                intent.putExtra("rutina_json", Gson().toJson(rutina))
-                startActivity(intent)
+                lanzarRutinaOSeleccionarGrupo(rutina)
             }
 
             container.addView(header)
-
-            // ── Tarjetas de ejercicios (solo informativas, sin botón) ────────
-            for (ej in rutina.ejercicios.sortedBy { it.orden }) {
-                val card = inflater.inflate(
-                    R.layout.item_ejercicio_info, container, false
-                ) as CardView
-
-                // Número de orden
-                card.findViewById<TextView>(R.id.tvEjOrden).text =
-                    "${ej.orden}"
-
-                // Nombre
-                card.findViewById<TextView>(R.id.tvEjNombre).text = ej.nombre
-
-                // Series × Reps
-                card.findViewById<TextView>(R.id.tvEjSeriesReps).text =
-                    "${ej.series} × ${ej.repeticiones}"
-
-                // Descanso
-                val tvDescanso = card.findViewById<TextView>(R.id.tvEjDescanso)
-                tvDescanso.text = when {
-                    ej.descanso_seg == null || ej.descanso_seg == 0 -> "Sin descanso"
-                    ej.descanso_seg < 60 -> "${ej.descanso_seg}s descanso"
-                    else -> {
-                        val min = ej.descanso_seg / 60
-                        val seg = ej.descanso_seg % 60
-                        if (seg == 0) "${min}min descanso" else "${min}m ${seg}s descanso"
-                    }
-                }
-
-                // Peso sugerido
-                card.findViewById<TextView>(R.id.tvEjPeso).text =
-                    if ((ej.peso_kg ?: 0.0) > 0.0) "· ${ej.peso_kg} kg" else "· Peso libre"
-
-                // Notas técnicas
-                val tvNotas = card.findViewById<TextView>(R.id.tvEjNotas)
-                if (!ej.descripcion_tecnica.isNullOrBlank()) {
-                    tvNotas.text      = "📋 ${ej.descripcion_tecnica}"
-                    tvNotas.visibility = View.VISIBLE
-                } else {
-                    tvNotas.visibility = View.GONE
-                }
-
-                // Imagen del ejercicio
-                val ivImg      = card.findViewById<ImageView>(R.id.ivEjImagen)
-                val tvFallback = card.findViewById<TextView>(R.id.tvEjImagenFallback)
-                val imgUrl = ej.imagen_url
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { if (it.startsWith("http")) it else "$baseUrl$it" }
-
-                if (!imgUrl.isNullOrBlank()) {
-                    ivImg.visibility      = View.VISIBLE
-                    tvFallback.visibility = View.GONE
-                    Glide.with(this)
-                        .load(imgUrl)
-                        .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .placeholder(R.drawable.bg_card_orange)
-                        .error(R.drawable.bg_card_orange)
-                        .into(ivImg)
-                } else {
-                    ivImg.visibility      = View.GONE
-                    tvFallback.visibility = View.VISIBLE
-                }
-
-                container.addView(card)
-            }
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Si la rutina tiene múltiples bloques → diálogo para elegir cuál entrenar.
+    // Los bloques vienen del backend ya ordenados con nombre y bloque_idx.
+    // Si solo hay un bloque → arranca directo sin diálogo.
+    // ─────────────────────────────────────────────────────────────────────────
+    private fun lanzarRutinaOSeleccionarGrupo(rutina: RutinaResponse) {
+
+        // Usar los bloques del backend si existen, sino inferir por bloque_idx
+        val bloques = if (rutina.bloques.isNotEmpty()) {
+            rutina.bloques
+        } else {
+            // Fallback: agrupar por bloque_idx (FLOOR(orden/100))
+            rutina.ejercicios
+                .map { it.bloque_idx }
+                .distinct()
+                .sorted()
+                .map { idx -> BloqueRutina(bloque_idx = idx, nombre = null) }
+        }
+
+        if (bloques.size <= 1) {
+            // Un solo bloque → lanzar directamente con todos los ejercicios
+            val nombreBloque = bloques.firstOrNull()?.nombre
+                ?: rutina.nombre
+                ?: "Entrenamiento"
+            abrirEntrenamiento(rutina, rutina.ejercicios, nombreBloque)
+            return
+        }
+
+        // Varios bloques → mostrar diálogo de selección
+        val dialogView = layoutInflater.inflate(R.layout.dialog_seleccion_grupo, null)
+        val containerGrupos = dialogView.findViewById<LinearLayout>(R.id.containerGrupos)
+        val tvRutinaNombreDialog = dialogView.findViewById<TextView>(R.id.tvRutinaNombreDialog)
+
+        tvRutinaNombreDialog.text = rutina.nombre?.uppercase()
+            ?: "RUTINA ${rutina.id_rutina}"
+
+        val dialog = AlertDialog.Builder(this, R.style.DialogDescanso)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        bloques.forEachIndexed { i, bloque ->
+            val ejerciciosBloque = rutina.ejercicios.filter { it.bloque_idx == bloque.bloque_idx }
+            val nombreBloque = bloque.nombre
+                ?: "Bloque ${i + 1}"
+
+            val btn = Button(this).apply {
+                text = "$nombreBloque  (${ejerciciosBloque.size} ejercicios)"
+                setBackgroundResource(R.drawable.bg_btn_orange_rounded)
+                setTextColor(resources.getColor(R.color.axf_text_primary, null))
+                textSize = 14f
+                val dp12 = (12 * resources.displayMetrics.density).toInt()
+                val dp8  = (8  * resources.displayMetrics.density).toInt()
+                setPadding(dp12, dp8, dp12, dp8)
+                stateListAnimator = null
+                val params = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                params.bottomMargin = dp8
+                layoutParams = params
+                setOnClickListener {
+                    dialog.dismiss()
+                    abrirEntrenamiento(rutina, ejerciciosBloque, nombreBloque)
+                }
+            }
+            containerGrupos.addView(btn)
+        }
+
+        dialog.show()
+    }
+
+    private fun abrirEntrenamiento(
+        rutina: RutinaResponse,
+        ejercicios: List<EjercicioRutina>,
+        grupoNombre: String
+    ) {
+        // Crear una copia de la rutina solo con los ejercicios del bloque elegido
+        val rutinaFiltrada = rutina.copy(
+            nombre     = grupoNombre,
+            ejercicios = ejercicios,
+            bloques    = emptyList()
+        )
+        val intent = Intent(this, EntrenamientoActivity::class.java)
+        intent.putExtra("rutina_id",    rutina.id_rutina)
+        intent.putExtra("rutina_json",  Gson().toJson(rutinaFiltrada))
+        intent.putExtra("grupo_nombre", grupoNombre)
+        startActivity(intent)
     }
 }

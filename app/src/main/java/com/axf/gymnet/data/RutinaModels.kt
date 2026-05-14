@@ -4,11 +4,17 @@ package com.axf.gymnet.data
 
 data class RutinaResponse(
     val id_rutina: Int,
-    val nombre: String?,            // Ej: "Pecho y Espalda", "Pierna Completa"
+    val nombre: String?,            // Nombre general de la rutina (puede ser null)
     val notas_pdf: String?,
     val creado_en: String,
     val entrenador: String,
-    val ejercicios: List<EjercicioRutina>
+    val ejercicios: List<EjercicioRutina>,
+    val bloques: List<BloqueRutina>  // Lista de bloques ordenados (Pecho, Espalda, Pierna...)
+)
+
+data class BloqueRutina(
+    val bloque_idx: Int,            // 0 = primer bloque, 1 = segundo, etc.
+    val nombre: String?             // Nombre del bloque ej: "Pecho", "Espalda". null si no tiene nombre
 )
 
 data class EjercicioRutina(
@@ -21,7 +27,8 @@ data class EjercicioRutina(
     val descanso_seg: Int?,         // null = sin descanso
     val peso_kg: Double?,
     val descripcion_tecnica: String?,
-    val grupo_muscular: String?     // categoría propia del ejercicio (ej: "Pecho", "Pierna")
+    val grupo_muscular: String?,    // nombre del bloque al que pertenece (ej: "Pecho")
+    val bloque_idx: Int             // índice del bloque: 0, 1, 2...
 )
 
 // ─── Request para guardar series completadas ─────────────────────────────────

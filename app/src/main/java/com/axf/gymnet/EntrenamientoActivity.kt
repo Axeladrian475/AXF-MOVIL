@@ -63,6 +63,12 @@ class EntrenamientoActivity : AppCompatActivity() {
         iniciarTimerEntrenamiento()
         construirUI()
 
+        // Título: nombre del grupo que se va a entrenar
+        val grupoNombre = intent.getStringExtra("grupo_nombre")
+            ?: rutina.nombre
+            ?: "Entreno en curso"
+        findViewById<TextView>(R.id.tvTituloEntrenamiento).text = grupoNombre
+
         // Botón terminar
         findViewById<Button>(R.id.btnTerminar).setOnClickListener { confirmarTerminar() }
 

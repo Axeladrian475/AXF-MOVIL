@@ -56,7 +56,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Por grupo muscular"
+                    android:text="Mis rutinas"
                     android:textColor="@color/axf_text_primary"
                     android:textSize="20sp"
                     android:textStyle="bold"
