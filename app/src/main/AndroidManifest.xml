@@ -45,6 +45,10 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".HistorialEjercicioActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ChatListaActivity"
             android:exported="false" />
 

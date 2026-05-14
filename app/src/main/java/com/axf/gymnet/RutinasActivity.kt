@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class RutinasActivity : AppCompatActivity() {
-    git stash pop
     private var token: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {

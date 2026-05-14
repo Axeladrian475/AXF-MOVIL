@@ -199,8 +199,24 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="10dp"
-            android:layout_marginBottom="14dp"
             android:background="@drawable/bg_tag_orange"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <!-- ── BOTÓN VER HISTORIAL ── -->
+        <TextView
+            android:id="@+id/btnVerHistorial"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="📊  Ver historial del ejercicio"
+            android:textColor="@color/axf_text_secondary"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="14dp"
+            android:background="@android:color/transparent"
             android:clickable="true"
             android:focusable="true"/>
 

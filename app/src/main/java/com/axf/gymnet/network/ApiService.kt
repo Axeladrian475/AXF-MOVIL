@@ -12,6 +12,7 @@ import com.axf.gymnet.data.DietaResumen
 import com.axf.gymnet.data.EnviarMensajeRequest
 import com.axf.gymnet.data.FcmTokenRequest
 import com.axf.gymnet.data.GuardarSerieRequest
+import com.axf.gymnet.data.HistorialEjercicioResponse
 import com.axf.gymnet.data.LoginRequest
 import com.axf.gymnet.data.LoginResponse
 import com.axf.gymnet.data.MensajesResponse
@@ -67,6 +68,12 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: GuardarSerieRequest
     ): Response<Unit>
+
+    @GET("api/movil/entrenamiento/historial/{id_rutina_ejercicio}")
+    suspend fun getHistorialEjercicio(
+        @Header("Authorization") token: String,
+        @Path("id_rutina_ejercicio") idRutinaEjercicio: Int
+    ): Response<HistorialEjercicioResponse>
 
     // ── CHAT ──────────────────────────────────────────────────────────────────
     @GET("api/chat/conversaciones")

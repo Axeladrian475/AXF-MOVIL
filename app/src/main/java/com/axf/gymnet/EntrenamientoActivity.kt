@@ -150,6 +150,13 @@ class EntrenamientoActivity : AppCompatActivity() {
             actualizarTotales()
         }
 
+        // Botón ver historial
+        v.findViewById<TextView>(R.id.btnVerHistorial).setOnClickListener {
+            val intent = Intent(this, HistorialEjercicioActivity::class.java)
+            intent.putExtra("id_rutina_ejercicio", ej.id_rutina_ejercicio)
+            startActivity(intent)
+        }
+
         return v
     }
 
@@ -210,19 +217,21 @@ class EntrenamientoActivity : AppCompatActivity() {
         btnCheck.setOnClickListener {
             serie.pesoKg = etPeso.text.toString().toDoubleOrNull() ?: 0.0
             serie.reps   = etReps.text.toString().toIntOrNull() ?: 0
+            
+            val fueGuardadaPreviamente = serie.guardada
             serie.completada = !serie.completada
 
             actualizarEstadoFila(fila, serie.completada)
             actualizarTotales()
 
-            // Guardar en backend
-            if (serie.completada && !serie.guardada) {
+            // Guardar o actualizar en backend
+            if (serie.completada) {
                 guardarSerieBackend(ej.id_rutina_ejercicio, idx + 1, serie)
                 serie.guardada = true
             }
 
-            // Iniciar timer de descanso si aplica
-            if (serie.completada && ej.descanso_seg != null && ej.descanso_seg > 0) {
+            // Iniciar timer de descanso si aplica y si es la primera vez que se completa en esta sesión
+            if (serie.completada && !fueGuardadaPreviamente && ej.descanso_seg != null && ej.descanso_seg > 0) {
                 iniciarDescanso(ej.descanso_seg)
             }
         }
