@@ -49,14 +49,19 @@ class EntrenamientoActivity : AppCompatActivity() {
         val rutinaJson = intent.getStringExtra("rutina_json") ?: run { finish(); return }
         rutina = Gson().fromJson(rutinaJson, RutinaResponse::class.java)
 
-        // Inicializar estado de series con los valores predefinidos o el historial reciente
+        // Inicializar estado de series:
+        // Si hay historial reciente → campos vacíos (el placeholder muestra lo anterior para comparar)
+        // Si no hay historial       → pre-rellenar con valores predefinidos de la rutina
         (rutina.ejercicios ?: emptyList()).forEach { ej ->
             val series = (1..ej.series).map { idx ->
                 val hist = ej.historial_reciente?.find { it.num_serie == idx }
-                SerieState(
-                    pesoKg = hist?.peso_levantado ?: ej.peso_kg ?: 0.0,
-                    reps   = hist?.reps_realizadas ?: ej.repeticiones
-                )
+                if (hist != null) {
+                    // Historial existe: dejar campos en blanco, el hint mostrará el valor anterior
+                    SerieState(pesoKg = 0.0, reps = 0)
+                } else {
+                    // Sin historial: pre-rellenar con preset de la rutina
+                    SerieState(pesoKg = ej.peso_kg ?: 0.0, reps = ej.repeticiones)
+                }
             }.toMutableList()
             seriesState[ej.id_rutina_ejercicio] = series
         }
@@ -136,8 +141,8 @@ class EntrenamientoActivity : AppCompatActivity() {
 
         // Botón agregar serie
         v.findViewById<TextView>(R.id.btnAgregarSerie).setOnClickListener {
-            val ultima = series.last()
-            series.add(SerieState(pesoKg = ultima.pesoKg, reps = ultima.reps))
+            // Nueva serie extra: siempre vacía para que el usuario ingrese nuevos valores
+            series.add(SerieState(pesoKg = 0.0, reps = 0))
             tablaSeries.removeAllViews()
             series.forEachIndexed { idx, s ->
                 tablaSeries.addView(crearFilaSerie(ej, idx, s, tablaSeries))
@@ -165,12 +170,31 @@ class EntrenamientoActivity : AppCompatActivity() {
 
         tvNumero.text = "${idx + 1}"
 
-        // "Anterior": el valor predefinido de la rutina
-        val pesoBase = if (ej.peso_kg != null && ej.peso_kg > 0) "${ej.peso_kg.toInt()}kg" else "--"
-        tvAnterior.text = "$pesoBase x ${ej.repeticiones}"
+        // "Anterior": muestra el historial real de la sesión pasada (o preset si no hay)
+        val hist = ej.historial_reciente?.find { it.num_serie == idx + 1 }
+        if (hist != null) {
+            val pesoHist = if ((hist.peso_levantado ?: 0.0) > 0)
+                "${hist.peso_levantado!!.toInt()}kg" else "--"
+            val repsHist = hist.reps_realizadas ?: ej.repeticiones
+            tvAnterior.text = "$pesoHist x $repsHist"
+        } else {
+            val pesoBase = if (ej.peso_kg != null && ej.peso_kg > 0) "${ej.peso_kg.toInt()}kg" else "--"
+            tvAnterior.text = "$pesoBase x ${ej.repeticiones}"
+        }
+
+        // Placeholders: si hay historial, usarlo como hint para comparar
+        if (hist != null) {
+            val pesoHint = if ((hist.peso_levantado ?: 0.0) > 0) "${hist.peso_levantado!!.toInt()}" else ""
+            val repsHint = hist.reps_realizadas?.toString() ?: "${ej.repeticiones}"
+            etPeso.hint = pesoHint.ifEmpty { "kg" }
+            etReps.hint = repsHint
+        } else {
+            etPeso.hint = "kg"
+            etReps.hint = "reps"
+        }
 
         etPeso.setText(if (serie.pesoKg > 0) serie.pesoKg.toInt().toString() else "")
-        etReps.setText(serie.reps.toString())
+        etReps.setText(if (serie.reps > 0) serie.reps.toString() else "")
 
         // Estado visual
         actualizarEstadoFila(fila, serie.completada)
