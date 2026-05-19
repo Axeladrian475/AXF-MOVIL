@@ -190,6 +190,15 @@ class ChatMensajesAdapter(
         }
     }
 
+    fun marcarEntregadoIndividual(idMensaje: Int) {
+        val idx = mensajes.indexOfFirst { it.id_mensaje == idMensaje }
+        if (idx == -1) return
+        if (mensajes[idx].entregado == 0) {
+            mensajes[idx] = mensajes[idx].copy(entregado = 1)
+            notifyItemChanged(idx)
+        }
+    }
+
     fun marcarLeidos(idPersonal: Int) {
         mensajes.forEachIndexed { i, msg ->
             if (msg.enviado_por == miRol && msg.leido == 0) {

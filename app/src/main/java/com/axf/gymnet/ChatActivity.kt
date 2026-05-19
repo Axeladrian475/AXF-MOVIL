@@ -95,12 +95,12 @@ class ChatActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
-            
+
             v.updatePadding(
                 top = systemBars.top,
                 bottom = if (ime.bottom > 0) ime.bottom else systemBars.bottom
             )
-            
+
             if (ime.bottom > 0) {
                 rv.postDelayed({
                     if (adapter.itemCount > 0) rv.scrollToPosition(adapter.itemCount - 1)
@@ -147,12 +147,12 @@ class ChatActivity : AppCompatActivity() {
         btnCancelarReply.setOnClickListener { cancelarReply() }
 
         val lm = LinearLayoutManager(this).apply { stackFromEnd = true }
-        adapter = ChatMensajesAdapter(mutableListOf(), "suscriptor", 
-            fotoPersonalUrl = fotoPersonal.ifBlank { null }, 
-            fotoSuscriptorUrl = fotoSusc.ifBlank { null }, 
-            nombrePersonal = nombre, 
+        adapter = ChatMensajesAdapter(mutableListOf(), "suscriptor",
+            fotoPersonalUrl = fotoPersonal.ifBlank { null },
+            fotoSuscriptorUrl = fotoSusc.ifBlank { null },
+            nombrePersonal = nombre,
             nombreSuscriptor = nombreSusc)
-        
+
         adapter.onLongClick = { msg -> mostrarMenuMensaje(msg) }
         rv.layoutManager = lm
         rv.adapter = adapter
@@ -257,41 +257,91 @@ class ChatActivity : AppCompatActivity() {
 
     private fun conectarSocket() {
         try {
-            val sk = IO.socket(RetrofitClient.BASE_URL.trimEnd('/'), IO.Options.builder().setAuth(mapOf("token" to token)).setReconnection(true).setReconnectionAttempts(Int.MAX_VALUE).setReconnectionDelay(2000).build())
+            // Detener el ChatSocketService mientras el usuario está en el chat activo.
+            // Así hay UN SOLO socket conectado (el de esta Activity), evitando la
+            // condición de carrera donde ambos sockets compiten por el mismo evento.
+            ChatSocketService.stop(this)
+
+            val sk = IO.socket(
+                RetrofitClient.BASE_URL.trimEnd('/'),
+                IO.Options.builder()
+                    .setAuth(mapOf("token" to token))
+                    .setTransports(arrayOf("websocket", "polling")) // WebSocket primero
+                    .setReconnection(true)
+                    .setReconnectionAttempts(Int.MAX_VALUE)
+                    .setReconnectionDelay(2000)
+                    .build()
+            )
             socket = sk
-            sk.on(Socket.EVENT_CONNECT) { runOnUiThread { sk.emit("chat:marcar_entregado", JSONObject()); sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal)); adapter.marcarEntregados() } }
-            sk.on("chat:mensaje_nuevo") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
-                val msgObj = data.optJSONObject("mensaje") ?: return@on
-                val msg = parseMensaje(msgObj)
-                runOnUiThread { adapter.agregar(msg); rv.scrollToPosition(adapter.itemCount - 1); sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal)); marcarComoLeidoAPI() }
+
+            sk.on(Socket.EVENT_CONNECT) {
+                runOnUiThread {
+                    sk.emit("chat:marcar_entregado", JSONObject())
+                    sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
+                    adapter.marcarEntregados()
+                }
             }
-            sk.on("chat:mensajes_leidos") { runOnUiThread { adapter.marcarLeidos(idPersonal) } }
-            sk.on("chat:entregado_bulk") { runOnUiThread { adapter.marcarEntregados() } }
+
+            sk.on("chat:mensaje_nuevo") { args ->
+                val data   = args.getOrNull(0) as? JSONObject ?: return@on
+                val msgObj = data.optJSONObject("mensaje") ?: return@on
+
+                // Filtrar: solo procesar mensajes de ESTA conversación
+                val msgIdPersonal = data.optInt("id_personal")
+                if (msgIdPersonal != idPersonal) return@on
+
+                val msg = parseMensaje(msgObj)
+                runOnUiThread {
+                    adapter.agregar(msg)
+                    rv.scrollToPosition(adapter.itemCount - 1)
+                    sk.emit("chat:leer", JSONObject().put("id_personal", idPersonal))
+                    marcarComoLeidoAPI()
+                }
+            }
+
+            sk.on("chat:mensajes_leidos") {
+                runOnUiThread { adapter.marcarLeidos(idPersonal) }
+            }
+
+            sk.on("chat:entregado_bulk") {
+                runOnUiThread { adapter.marcarEntregados() }
+            }
+
+            sk.on("chat:entregado") { args ->
+                val data  = args.getOrNull(0) as? JSONObject ?: return@on
+                val idMsg = data.optInt("id_mensaje")
+                runOnUiThread { adapter.marcarEntregadoIndividual(idMsg) }
+            }
+
             sk.on("chat:mensaje_editado") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data  = args.getOrNull(0) as? JSONObject ?: return@on
                 val idMsg = data.optInt("id_mensaje")
                 val nuevo = data.optString("nuevo_contenido")
                 val edEn  = data.optString("editado_en")
                 runOnUiThread { adapter.actualizarMensaje(idMsg, nuevo, edEn) }
             }
+
             sk.on("chat:mensaje_eliminado") { args ->
-                val data = args.getOrNull(0) as? JSONObject ?: return@on
+                val data  = args.getOrNull(0) as? JSONObject ?: return@on
                 val idMsg = data.optInt("id_mensaje")
                 runOnUiThread { adapter.eliminarMensaje(idMsg) }
             }
+
             sk.on("chat:escribiendo") { args ->
                 val data = args.getOrNull(0) as? JSONObject ?: return@on
                 if (data.optInt("id_personal") != idPersonal) return@on
                 runOnUiThread { tvEscribiendo.visibility = View.VISIBLE }
             }
+
             sk.on("chat:parar_escribir") { args ->
                 val data = args.getOrNull(0) as? JSONObject ?: return@on
                 if (data.optInt("id_personal") != idPersonal) return@on
                 runOnUiThread { tvEscribiendo.visibility = View.GONE }
             }
+
             sk.connect()
-        } catch (e: Exception) { }
+
+        } catch (_: Exception) { }
     }
 
     private fun enviarMensaje(texto: String) {
@@ -324,18 +374,27 @@ class ChatActivity : AppCompatActivity() {
     private fun cancelarReply() { replyMsg = null; llReply.visibility = View.GONE }
 
     private fun parseMensaje(obj: JSONObject): ChatMensaje {
+        // leido y entregado vienen como Int (0/1) desde el backend, NO como Boolean
+        val leidoVal = when {
+            obj.isNull("leido") -> 0
+            else -> try { obj.getInt("leido") } catch (_: Exception) { if (obj.optBoolean("leido")) 1 else 0 }
+        }
+        val entregadoVal = when {
+            obj.isNull("entregado") -> 0
+            else -> try { obj.getInt("entregado") } catch (_: Exception) { if (obj.optBoolean("entregado")) 1 else 0 }
+        }
         return ChatMensaje(
-            id_mensaje = obj.optInt("id_mensaje"),
-            enviado_por = obj.optString("enviado_por"),
-            contenido = obj.optString("contenido"),
-            leido = if (obj.optBoolean("leido")) 1 else 0,
-            entregado = if (obj.optBoolean("entregado")) 1 else 0,
-            id_respuesta = if (obj.isNull("id_respuesta")) null else obj.optInt("id_respuesta"),
-            respuesta_contenido = obj.optString("respuesta_contenido"),
-            respuesta_enviado_por = obj.optString("respuesta_enviado_por"),
-            editado_en = if (obj.isNull("editado_en")) null else obj.optString("editado_en"),
-            enviado_en = obj.optString("enviado_en", obj.optString("fecha_envio")),
-            borrado_para = obj.optString("borrado_para", "nadie")
+            id_mensaje            = obj.optInt("id_mensaje"),
+            enviado_por           = obj.optString("enviado_por"),
+            contenido             = obj.optString("contenido"),
+            leido                 = leidoVal,
+            entregado             = entregadoVal,
+            id_respuesta          = if (obj.isNull("id_respuesta")) null else obj.optInt("id_respuesta"),
+            respuesta_contenido   = if (obj.isNull("respuesta_contenido")) null else obj.optString("respuesta_contenido"),
+            respuesta_enviado_por = if (obj.isNull("respuesta_enviado_por")) null else obj.optString("respuesta_enviado_por"),
+            editado_en            = if (obj.isNull("editado_en")) null else obj.optString("editado_en"),
+            enviado_en            = obj.optString("enviado_en").ifBlank { obj.optString("fecha_envio") },
+            borrado_para          = obj.optString("borrado_para", "nadie")
         )
     }
 
@@ -389,5 +448,13 @@ class ChatActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         socket?.disconnect()
+        socket = null
+        // Reactivar el servicio de background para que las notificaciones
+        // sigan llegando cuando el usuario sale del chat
+        val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
+        val savedToken = prefs.getString("token", "") ?: ""
+        if (savedToken.isNotEmpty()) {
+            ChatSocketService.start(this)
+        }
     }
 }
