@@ -1,17 +1,27 @@
 package com.axf.gymnet
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import com.axf.gymnet.InsetUtils.pedirPermisoNotificacionesSiNecesario
 import com.axf.gymnet.data.DescansoRequest
 import com.axf.gymnet.network.RetrofitClient
 import com.github.mikephil.charting.charts.BarChart
@@ -24,10 +34,19 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Extensión para convertir dp a px de forma segura
+private fun Int.dpToPx(context: Context): Int =
+    (this * context.resources.displayMetrics.density).toInt()
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var tvChatBadge: TextView
     private var token: String = ""
+
+    // Solicita POST_NOTIFICATIONS al arrancar (necesario Android 13+)
+    private val notifPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* el usuario decidió; no hacemos nada forzoso */ }
 
     // Auto-refresh aforo
     private val aforoHandler   = Handler(Looper.getMainLooper())
@@ -58,8 +77,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvPuntos:      TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Pedir permiso de notificaciones (Android 13+)
+        pedirPermisoNotificacionesSiNecesario(notifPermissionLauncher)
 
         MyFirebaseMessagingService.crearCanales(this)
         ChatSocketService.start(this)
@@ -165,6 +188,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupBarChart(barChart, listOf(0f, 0f, 0f, 0f, 0f, 0f))
+
+        // ── WindowInsets: margen superior e inferior para Android 15 ────────────
+        // Se aplica sobre la nav bar inferior para que los botones del sistema
+        // no tapen el contenido, y sobre el header para respetar la status bar.
+        val headerView = findViewById<View>(R.id.mainHeader)
+        val navBarView = findViewById<View>(R.id.mainNavBar)
+        val scrollView = findViewById<View>(R.id.mainScrollView)
+        val headerPadTop = headerView?.paddingTop ?: 0
+
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            headerView?.updatePadding(top = headerPadTop + bars.top)
+            navBarView?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = bars.bottom
+            }
+            scrollView?.updatePadding(bottom = 72.dpToPx(this) + bars.bottom)
+            insets
+        }
 
         // Botón manual de aforo
         btnAforo.setOnClickListener { cargarAforo() }

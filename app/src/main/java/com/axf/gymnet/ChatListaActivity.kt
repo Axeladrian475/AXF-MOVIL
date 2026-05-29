@@ -5,28 +5,45 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.axf.gymnet.data.ChatConversacion
 import com.axf.gymnet.network.RetrofitClient
-import io.socket.client.IO
-import io.socket.client.Socket
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-class ChatListaActivity : AppCompatActivity() {
+/**
+ * Lista de conversaciones del suscriptor.
+ *
+ * YA NO crea su propio socket. Usa el socket centralizado del
+ * ChatSocketService y se registra como listener para recibir
+ * actualizaciones en tiempo real (nuevos mensajes, escribiendo, etc.)
+ */
+class ChatListaActivity : AppCompatActivity(), ChatSocketService.ChatSocketListener {
 
     private lateinit var rv:      RecyclerView
     private lateinit var adapter: ChatConversacionesAdapter
     private var tvSubtitulo: TextView? = null
     private var token  = ""
-    private var socket: Socket? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_lista)
+
+        // Respetar status bar en el header
+        val header = findViewById<View>(R.id.chatListaHeader)
+        val headerPadTop = header?.paddingTop ?: 0
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            header?.updatePadding(top = headerPadTop + bars.top)
+            insets
+        }
 
         token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
             .getString("token", "") ?: ""
@@ -53,14 +70,45 @@ class ChatListaActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         cargarConversaciones()
-        conectarSocket()
+        // Registrar como listener del socket centralizado
+        ChatSocketService.addListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        socket?.disconnect()
-        socket = null
+        // Desregistrar listener pero NO desconectar el socket
+        ChatSocketService.removeListener(this)
     }
+
+    // ── ChatSocketService.ChatSocketListener ─────────────────────────────────
+
+    override fun onSocketConnected() {
+        // Al reconectar, recargar conversaciones para sincronizar estado
+        cargarConversaciones()
+    }
+
+    override fun onMensajeNuevo(data: JSONObject) {
+        val idPersonal = data.optInt("id_personal")
+        val mensaje    = data.optJSONObject("mensaje")?.optString("contenido") ?: ""
+        adapter.actualizarUltimo(idPersonal, mensaje, incrementarBadge = true)
+    }
+
+    override fun onMensajesLeidos(data: JSONObject) {
+        val idPersonal = data.optInt("id_personal")
+        adapter.limpiarBadge(idPersonal)
+    }
+
+    override fun onEscribiendo(data: JSONObject) {
+        val idPersonal = data.optInt("id_personal")
+        adapter.setEscribiendo(idPersonal, true)
+    }
+
+    override fun onPararEscribir(data: JSONObject) {
+        val idPersonal = data.optInt("id_personal")
+        adapter.setEscribiendo(idPersonal, false)
+    }
+
+    // ── REST ─────────────────────────────────────────────────────────────────
 
     private fun cargarConversaciones() {
         lifecycleScope.launch {
@@ -90,55 +138,6 @@ class ChatListaActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-        }
-    }
-
-    private fun conectarSocket() {
-        try {
-            val sk = IO.socket(
-                RetrofitClient.BASE_URL.trimEnd('/'),
-                IO.Options.builder()
-                    .setAuth(mapOf("token" to token))
-                    .setReconnection(true)
-                    .setReconnectionAttempts(Int.MAX_VALUE)
-                    .setReconnectionDelay(2000)
-                    .build()
-            )
-            socket = sk
-
-            // Nuevo mensaje → actualizar preview y badge
-            sk.on("chat:mensaje_nuevo") { args ->
-                val data       = args.getOrNull(0) as? JSONObject ?: return@on
-                val idPersonal = data.optInt("id_personal")
-                val mensaje    = data.optJSONObject("mensaje")?.optString("contenido") ?: ""
-                runOnUiThread {
-                    adapter.actualizarUltimo(idPersonal, mensaje, incrementarBadge = true)
-                }
-            }
-
-            // Mensajes leídos → limpiar badge
-            sk.on("chat:mensajes_leidos") { args ->
-                val data       = args.getOrNull(0) as? JSONObject ?: return@on
-                val idPersonal = data.optInt("id_personal")
-                runOnUiThread { adapter.limpiarBadge(idPersonal) }
-            }
-
-            // Está escribiendo
-            sk.on("chat:escribiendo") { args ->
-                val data       = args.getOrNull(0) as? JSONObject ?: return@on
-                val idPersonal = data.optInt("id_personal")
-                runOnUiThread { adapter.setEscribiendo(idPersonal, true) }
-            }
-
-            sk.on("chat:parar_escribir") { args ->
-                val data       = args.getOrNull(0) as? JSONObject ?: return@on
-                val idPersonal = data.optInt("id_personal")
-                runOnUiThread { adapter.setEscribiendo(idPersonal, false) }
-            }
-
-            sk.connect()
-        } catch (e: Exception) {
-            android.util.Log.w("ChatLista", "Socket error: ${e.message}")
         }
     }
 

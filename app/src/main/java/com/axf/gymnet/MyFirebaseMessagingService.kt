@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -19,19 +20,19 @@ import com.axf.gymnet.data.FcmTokenRequest
 /**
  * Servicio de Firebase Cloud Messaging.
  *
- * Maneja dos tipos de mensajes FCM:
- *  1. Mensajes con "notification" payload  → Android los muestra automáticamente
- *     cuando la app está en background/cerrada. Aquí los interceptamos para
- *     añadir extras (deep link a ChatActivity).
- *  2. Mensajes DATA-ONLY (solo "data" payload) → Siempre llegan a onMessageReceived,
- *     incluso con la app cerrada. El backend envía este tipo para máximo control.
+ * Maneja mensajes DATA-ONLY (solo "data" payload) → Siempre llegan a
+ * onMessageReceived, incluso con la app cerrada.
  *
- * El backend (socket.js) ya envía ambos en el mismo mensaje FCM ("notification" + "data"),
- * lo que garantiza entrega en todos los estados de la app.
+ * CORRECCIÓN para tiempo real:
+ *  - Si ChatSocketService está activo y conectado, FCM se usa como backup.
+ *  - Si ChatActivity está mostrando el chat del remitente, NO mostrar notificación
+ *    (el mensaje ya apareció vía socket).
+ *  - Si la app tiene el socket activo, refrescar la conexión al recibir FCM
+ *    (indica que el servidor tiene mensajes para nosotros).
  */
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
-    // ─── Canales de notificación ──────────────────────────────────────────────
+    // ── Canales de notificación ──────────────────────────────────────────────
     companion object {
         const val CHANNEL_CHAT     = "chat_mensajes"
         const val CHANNEL_GENERAL  = "general"
@@ -72,7 +73,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    // ─── Nuevo token FCM ─────────────────────────────────────────────────────
+    // ── Nuevo token FCM ─────────────────────────────────────────────────────
     override fun onNewToken(token: String) {
         super.onNewToken(token)
 
@@ -94,35 +95,72 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    // ─── Mensaje recibido ────────────────────────────────────────────────────
+    // ── Mensaje recibido ─────────────────────────────────────────────────────
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        // Extraer datos: primero del payload "data", luego del "notification"
-        val data            = message.data
-        val tipo            = data["tipo"] ?: "general"
-        val titulo          = data["titulo"]
-            ?: message.notification?.title
-            ?: "AXF GymNet"
-        val cuerpo          = data["cuerpo"]
-            ?: message.notification?.body
-            ?: ""
-        val idPersonalStr   = data["id_personal"]
-        val idSuscriptorStr = data["id_suscriptor"]
-        val nombrePersonal  = data["nombre_personal"] ?: titulo
+        // Asegurarnos de que los canales existan
+        crearCanales(this)
+
+        val data           = message.data
+        Log.d("FCM_SERVICE", "Mensaje recibido: $data")
+        val tipo           = data["tipo"] ?: "general"
+        val titulo         = data["titulo"] ?: data["nombre_personal"] ?: "AXF GymNet"
+        val cuerpo         = data["cuerpo"] ?: ""
+        val idPersonalStr  = data["id_personal"]
+        val nombrePersonal = data["nombre_personal"] ?: titulo
+
+        // Guardar nombre en caché para notificaciones locales del ChatSocketService
+        idPersonalStr?.toIntOrNull()?.let { idP ->
+            if (nombrePersonal.isNotBlank()) {
+                getSharedPreferences("axf_personal_names", MODE_PRIVATE)
+                    .edit().putString("personal_$idP", nombrePersonal).apply()
+            }
+        }
 
         when (tipo) {
-            "chat" -> mostrarNotificacionChat(
-                titulo          = nombrePersonal,
-                cuerpo          = cuerpo,
-                idPersonal      = idPersonalStr?.toIntOrNull() ?: return,
-                nombrePersonal  = nombrePersonal
-            )
+            "chat" -> {
+                val idPersonal = idPersonalStr?.toIntOrNull() ?: return
+
+                // ── PREVENCIÓN DE DUPLICADOS ────────────────────────────
+                // Si ChatActivity está mostrando exactamente este chat,
+                // el mensaje ya llegó por socket → NO mostrar notificación
+                if (ChatSocketService.activeChatPersonalId == idPersonal) {
+                    Log.d("FCM_SERVICE", "Chat activo para personal $idPersonal, suprimiendo notificación")
+                    return
+                }
+
+                // Si el socket está conectado, el ChatSocketService ya manejó
+                // el mensaje y mostró la notificación → evitar duplicado
+                if (ChatSocketService.isConnected) {
+                    Log.d("FCM_SERVICE", "Socket activo, suprimiendo notificación FCM (ya notificado por socket)")
+                    return
+                }
+
+                // Socket desconectado → mostrar notificación FCM
+                mostrarNotificacionChat(
+                    titulo         = nombrePersonal,
+                    cuerpo         = cuerpo,
+                    idPersonal     = idPersonal,
+                    nombrePersonal = nombrePersonal
+                )
+            }
             else -> mostrarNotificacionGeneral(titulo, cuerpo)
         }
     }
 
-    // ─── Notificación de chat ─────────────────────────────────────────────────
+    // ── Mensajes eliminados en el servidor ───────────────────────────────────
+    override fun onDeletedMessages() {
+        super.onDeletedMessages()
+        getSharedPreferences("axf_prefs", MODE_PRIVATE)
+            .edit().putBoolean("pendientes_sinc", true).apply()
+        mostrarNotificacionGeneral(
+            titulo = "AXF GymNet",
+            cuerpo = "Tienes mensajes nuevos esperando"
+        )
+    }
+
+    // ── Notificación de chat ─────────────────────────────────────────────────
     private fun mostrarNotificacionChat(
         titulo:         String,
         cuerpo:         String,
@@ -131,14 +169,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     ) {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Intent que abre ChatActivity directamente
-        // Si la app está cerrada, Android la lanza desde LoginActivity → MainActivity
-        // pero con launchMode=singleTop en ChatActivity se apila correctamente.
         val abrirChat = Intent(this, ChatActivity::class.java).apply {
             putExtra("id_personal",      idPersonal)
             putExtra("nombre_personal",  nombrePersonal)
-            // Estas flags garantizan que si la app está en background,
-            // ChatActivity se pone al frente en vez de crear una nueva instancia
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -146,7 +179,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val pendingIntent = PendingIntent.getActivity(
             this,
-            idPersonal,   // requestCode único por conversación
+            idPersonal,
             abrirChat,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -162,15 +195,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
-            // Badge en el ícono de la app
             .setNumber(1)
             .build()
 
-        // ID única por conversación → una notificación por entrenador, no una por mensaje
         manager.notify(CHANNEL_CHAT.hashCode() + idPersonal, notif)
     }
 
-    // ─── Notificación general ─────────────────────────────────────────────────
+    // ── Notificación general ─────────────────────────────────────────────────
     private fun mostrarNotificacionGeneral(titulo: String, cuerpo: String) {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

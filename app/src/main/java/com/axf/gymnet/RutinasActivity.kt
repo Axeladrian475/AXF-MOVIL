@@ -7,8 +7,12 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.axf.gymnet.data.BloqueRutina
 import com.axf.gymnet.data.EjercicioRutina
@@ -23,8 +27,18 @@ class RutinasActivity : AppCompatActivity() {
     private var token: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_rutinas)
+
+        // Respetar status bar en el header
+        val header = findViewById<View>(R.id.rutinasHeader)
+        val headerPadTop = header?.paddingTop ?: 0
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            header?.updatePadding(top = headerPadTop + bars.top)
+            insets
+        }
 
         token = getSharedPreferences("axf_prefs", MODE_PRIVATE)
             .getString("token", "") ?: ""

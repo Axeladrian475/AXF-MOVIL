@@ -14,6 +14,7 @@
 
     <!-- CONTENIDO SCROLLEABLE -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -26,6 +27,7 @@
 
             <!-- ── HEADER ── -->
             <LinearLayout
+                android:id="@+id/mainHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/axf_bg_primary"
@@ -633,6 +635,7 @@
 
     <!-- ── BARRA DE NAVEGACIÓN INFERIOR ── -->
     <LinearLayout
+        android:id="@+id/mainNavBar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:background="@color/axf_bg_primary"

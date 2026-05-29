@@ -12,6 +12,7 @@
 
     <!-- ── HEADER PREMIUM ── -->
     <LinearLayout
+        android:id="@+id/rutinasHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/axf_bg_primary"

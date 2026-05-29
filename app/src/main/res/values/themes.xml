@@ -12,6 +12,11 @@
         <item name="colorOnSurface">@color/axf_text_primary</item>
         <item name="android:textColorPrimary">@color/axf_text_primary</item>
         <item name="android:textColorSecondary">@color/axf_text_secondary</item>
+        <!-- Edge-to-edge: barras transparentes para Android 15 -->
+        <!-- Los WindowInsets en el código se encargan del padding real -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <style name="Theme.AxFGymNet" parent="Base.Theme.AxFGymNet" />

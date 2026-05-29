@@ -7,8 +7,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.axf.gymnet.data.FcmTokenRequest
 import com.axf.gymnet.network.RetrofitClient
 import com.axf.gymnet.viewmodel.LoginViewModel
@@ -27,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Si ya hay sesión activa, saltar directo a MainActivity
@@ -40,6 +45,16 @@ class LoginActivity : AppCompatActivity() {
         }
 
         setContentView(R.layout.activity_login)
+
+        // Aplicar insets al ScrollView para que los botones de nav no tapen el botón de login
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            window.decorView.rootView.updatePadding(
+                top    = systemBars.top,
+                bottom = systemBars.bottom
+            )
+            insets
+        }
 
         // Crear canales de notificación (necesario en Android 8+)
         MyFirebaseMessagingService.crearCanales(this)

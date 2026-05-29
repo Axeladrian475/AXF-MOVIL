@@ -25,9 +25,11 @@ object RetrofitClient {
      * ─────────────────────────────────────────────────────────────────────────
      * IMPORTANTE: Si usas HTTP (no HTTPS), asegúrate de tener
      *   android:usesCleartextTraffic="true"  en el AndroidManifest.xml
+     *       const val BASE_URL = "https://axfgymnet.com/"
+     *
      * ─────────────────────────────────────────────────────────────────────────
      */
-    const val BASE_URL = "https://axfgymnet.com/"
+    const val BASE_URL = "http://10.0.2.2:3001/"
 
     // OkHttpClient con timeouts extendidos para soportar upload de imágenes
     private val okHttpClient = OkHttpClient.Builder()
