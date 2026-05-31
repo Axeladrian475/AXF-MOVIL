@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tvChatBadge: TextView
     private var token: String = ""
+    private var selectedSucursalId: Int? = null
 
     // Solicita POST_NOTIFICATIONS al arrancar (necesario Android 13+)
     private val notifPermissionLauncher = registerForActivityResult(
@@ -271,6 +272,7 @@ class MainActivity : AppCompatActivity() {
 
         // Botón manual de aforo
         btnAforo.setOnClickListener { cargarAforo() }
+        tvNombreSucursal.setOnClickListener { mostrarSelectorSucursales() }
 
         // Cerrar sesión
         findViewById<ImageView>(R.id.btnCerrarSesion).setOnClickListener {
@@ -445,7 +447,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val resp = RetrofitClient.instance.getAforo("Bearer $token")
+                val resp = RetrofitClient.instance.getAforo("Bearer $token", selectedSucursalId)
                 if (resp.isSuccessful) {
                     val a = resp.body()!!
                     val graficaFloats = a.grafica?.map { it.toFloat() } ?: listOf(0f, 0f, 0f, 0f, 0f, 0f)
@@ -464,9 +466,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun mostrarSelectorSucursales() {
+        if (token.isEmpty()) return
+        tvNombreSucursal.text = "Cargando..."
+        lifecycleScope.launch {
+            try {
+                val resp = RetrofitClient.instance.getSucursales("Bearer $token")
+                if (resp.isSuccessful) {
+                    val sucursales = resp.body() ?: emptyList()
+                    if (sucursales.isNotEmpty()) {
+                        val nombres = sucursales.map { it.nombre }.toTypedArray()
+                        runOnUiThread {
+                            android.app.AlertDialog.Builder(this@MainActivity)
+                                .setTitle("Seleccionar Sucursal")
+                                .setItems(nombres, android.content.DialogInterface.OnClickListener { _, which ->
+                                    selectedSucursalId = sucursales[which].id_sucursal
+                                    cargarAforo()
+                                })
+                                .setNegativeButton("Cancelar", android.content.DialogInterface.OnClickListener { d, _ -> 
+                                    d.dismiss()
+                                    cargarAforo()
+                                })
+                                .show()
+                        }
+                    } else {
+                        runOnUiThread { cargarAforo() }
+                    }
+                } else {
+                    runOnUiThread { cargarAforo() }
+                }
+            } catch (e: Exception) {
+                runOnUiThread { cargarAforo() }
+            }
+        }
+    }
+
     // Actualizar UI del aforo
     private fun actualizarUIAforo(dentro: Int, max: Int, pct: Int, nombreSucursal: String) {
-        tvNombreSucursal.text = "Afluencia en $nombreSucursal"
+        tvNombreSucursal.text = "Afluencia en $nombreSucursal ▾"
         tvAforo.text    = "$dentro / $max personas"
         tvAforoPct.text = "$pct%"
 

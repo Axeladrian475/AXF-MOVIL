@@ -50,8 +50,11 @@ interface ApiService {
 
     @GET("api/suscriptores/movil/aforo")
     suspend fun getAforo(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("id_sucursal") idSucursal: Int? = null
     ): Response<AforoResponse>
+
+
 
     @GET("api/suscriptores/movil/suscripcion")
     suspend fun getSuscripcion(
