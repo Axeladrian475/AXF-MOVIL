@@ -67,6 +67,15 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".TiendaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PagoTarjetaActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".DietasActivity"
             android:exported="false" />
 

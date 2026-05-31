@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/axf_bg_deep">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/axf_bg_primary"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvTiendaBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← "
+            android:textColor="@color/axf_orange"
+            android:textSize="20sp"
+            android:paddingEnd="8dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Suscripciones y Promociones"
+            android:textColor="@color/axf_text_primary"
+            android:textSize="18sp"
+            android:fontFamily="@font/jockey_one"/>
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pbTienda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:indeterminateTint="@color/axf_orange"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollTienda"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTiendaInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/axf_orange_dim"
+                android:padding="12dp"
+                android:textColor="@color/axf_orange"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Suscripciones"
+                android:textColor="@color/axf_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvSinSuscripciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No hay planes de suscripción disponibles."
+                android:textColor="@color/axf_text_secondary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:gravity="center"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSuscripciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="20dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Promociones"
+                android:textColor="@color/axf_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/tvSinPromociones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No hay promociones disponibles."
+                android:textColor="@color/axf_text_secondary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:gravity="center"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPromociones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pagos seguros con tarjeta de crédito o débito vía PayPal"
+                android:textColor="@color/axf_text_tertiary"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:padding="24dp"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

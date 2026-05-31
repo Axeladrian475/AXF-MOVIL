@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Pago AXF</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0; padding: 16px;
+      background: #070E1A; color: #fff;
+    }
+    h2 { margin: 0 0 4px; font-size: 18px; }
+    .sub { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+    label {
+      display: block; font-size: 11px; font-weight: 700;
+      color: #667788; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .field {
+      border: 1px solid #2A3F56; border-radius: 10px;
+      background: #12243A; height: 48px; padding: 0 12px; margin-bottom: 16px;
+    }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    .error {
+      background: #2a1010; border: 1px solid #C0392B; color: #ff6b6b;
+      border-radius: 8px; padding: 10px; font-size: 13px; margin-bottom: 12px;
+      display: none;
+    }
+    button {
+      width: 100%; background: #003087; color: #fff; border: none;
+      border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700;
+      margin-top: 8px;
+    }
+    button:disabled { opacity: 0.6; }
+    .secure { text-align: center; color: #556677; font-size: 11px; margin-top: 16px; }
+    #loading { text-align: center; padding: 40px; color: #667788; }
+  </style>
+</head>
+<body>
+  <div id="loading">Cargando formulario seguro de PayPal...</div>
+  <div id="form" style="display:none">
+    <h2 id="planName"></h2>
+    <p class="sub" id="planPrice"></p>
+    <div id="errBox" class="error"></div>
+    <label>Número de tarjeta</label>
+    <div id="card-number" class="field"></div>
+    <div class="row">
+      <div>
+        <label>Expiración</label>
+        <div id="card-expiry" class="field"></div>
+      </div>
+      <div>
+        <label>CVV</label>
+        <div id="card-cvv" class="field"></div>
+      </div>
+    </div>
+    <button id="btnPay" type="button">Pagar</button>
+    <p class="secure">Pago seguro procesado por PayPal</p>
+  </div>
+
+  <script>
+    var cardFields = null;
+    var cfg = {};
+
+    function showError(msg) {
+      var box = document.getElementById('errBox');
+      box.textContent = msg;
+      box.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('errBox').style.display = 'none';
+    }
+
+    function onPaymentSuccess(jsonStr) {
+      try {
+        var data = JSON.parse(jsonStr);
+        if (data.ok) {
+          if (window.AndroidBridge) AndroidBridge.onSuccess(jsonStr);
+        } else {
+          showError(data.message || 'No se pudo confirmar el pago.');
+          document.getElementById('btnPay').disabled = false;
+        }
+      } catch (e) {
+        showError('Error al procesar la respuesta.');
+        document.getElementById('btnPay').disabled = false;
+      }
+    }
+
+    function loadSdk(clientId) {
+      return new Promise(function(resolve, reject) {
+        if (window.paypal) { resolve(); return; }
+        var s = document.createElement('script');
+        s.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(clientId)
+          + '&currency=MXN&components=card-fields&intent=capture&disable-funding=venmo,paylater';
+        s.onload = resolve;
+        s.onerror = function() { reject(new Error('No se pudo cargar PayPal')); };
+        document.head.appendChild(s);
+      });
+    }
+
+    function initForm() {
+      document.getElementById('planName').textContent = cfg.nombre || 'Plan';
+      document.getElementById('planPrice').textContent =
+        '$' + Number(cfg.precio || 0).toFixed(2) + ' MXN';
+
+      if (!window.paypal || !window.paypal.CardFields) {
+        showError('PayPal Card Fields no disponible.');
+        return;
+      }
+
+      cardFields = window.paypal.CardFields({
+        createOrder: function() {
+          hideError();
+          return new Promise(function(resolve, reject) {
+            try {
+              var result = AndroidBridge.crearOrden(cfg.idTipo || 0, cfg.idPromocion || 0);
+              var data = JSON.parse(result);
+              if (data.order_id) resolve(data.order_id);
+              else reject(new Error(data.message || 'Error al crear orden'));
+            } catch (e) {
+              reject(e);
+            }
+          });
+        },
+        onApprove: function(data) {
+          document.getElementById('btnPay').disabled = true;
+          try {
+            var result = AndroidBridge.capturarOrden(
+              data.orderID, cfg.idTipo || 0, cfg.idPromocion || 0
+            );
+            onPaymentSuccess(result);
+          } catch (e) {
+            showError('Error al confirmar el pago.');
+            document.getElementById('btnPay').disabled = false;
+          }
+        },
+        onError: function(err) {
+          console.error(err);
+          showError('Error al procesar la tarjeta. Verifica los datos.');
+          document.getElementById('btnPay').disabled = false;
+        },
+        style: {
+          input: {
+            'font-size': '15px',
+            color: '#ffffff',
+            padding: '0 4px',
+            'line-height': '44px'
+          },
+          '.invalid': { color: '#ff6b6b' },
+          '.valid': { color: '#ffffff' }
+        }
+      });
+
+      if (!cardFields.isEligible()) {
+        showError('El pago con tarjeta no está disponible para esta región.');
+        return;
+      }
+
+      cardFields.NumberField({ placeholder: '1234 5678 9012 3456' })
+        .render('#card-number');
+      cardFields.ExpiryField({ placeholder: 'MM / AA' })
+        .render('#card-expiry');
+      cardFields.CVVField({ placeholder: 'CVV' })
+        .render('#card-cvv');
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('form').style.display = 'block';
+
+      document.getElementById('btnPay').addEventListener('click', function() {
+        hideError();
+        this.disabled = true;
+        cardFields.submit().catch(function(err) {
+          showError(err.message || 'Datos de tarjeta inválidos.');
+          document.getElementById('btnPay').disabled = false;
+        });
+      });
+    }
+
+    function start(configJson) {
+      try {
+        cfg = JSON.parse(configJson);
+      } catch (e) {
+        document.getElementById('loading').textContent = 'Configuración inválida.';
+        return;
+      }
+      loadSdk(cfg.clientId)
+        .then(initForm)
+        .catch(function(err) {
+          document.getElementById('loading').textContent = err.message;
+        });
+    }
+  </script>
+</body>
+</html>

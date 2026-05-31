@@ -663,7 +663,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Inicio"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textColor="@color/axf_nav_active"/>
         </LinearLayout>
 
@@ -687,7 +687,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Entreno"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
@@ -711,7 +711,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Dieta"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
@@ -753,7 +753,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Chat"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 
@@ -777,7 +777,31 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reportar"
-                android:textSize="10sp"
+                android:textSize="9sp"
+                android:textColor="@color/axf_nav_inactive"/>
+        </LinearLayout>
+
+        <!-- Tienda (Suscripciones y Promociones) -->
+        <LinearLayout
+            android:id="@+id/navTienda"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/bg_nav_item">
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_tienda"
+                android:contentDescription="Tienda"
+                android:tint="@color/axf_nav_inactive"
+                android:layout_marginBottom="3dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tienda"
+                android:textSize="9sp"
                 android:textColor="@color/axf_nav_inactive"/>
         </LinearLayout>
 

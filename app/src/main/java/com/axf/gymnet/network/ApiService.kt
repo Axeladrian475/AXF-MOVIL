@@ -24,6 +24,12 @@ import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.data.SucursalItem
 import com.axf.gymnet.data.SumarseReporteResponse
 import com.axf.gymnet.data.SuscripcionResponse
+import com.axf.gymnet.data.CatalogoTiendaResponse
+import com.axf.gymnet.data.PayPalConfigResponse
+import com.axf.gymnet.data.CrearOrdenTiendaRequest
+import com.axf.gymnet.data.CrearOrdenTiendaResponse
+import com.axf.gymnet.data.CapturarOrdenTiendaRequest
+import com.axf.gymnet.data.CapturarOrdenTiendaResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -196,4 +202,28 @@ interface ApiService {
     suspend fun getMisReportes(
         @Header("Authorization") token: String
     ): Response<MisReportesResponse>
+
+    // ── TIENDA (suscripciones y promociones) ──────────────────────────────────
+
+    @GET("api/movil/tienda/catalogo")
+    suspend fun getCatalogoTienda(
+        @Header("Authorization") token: String
+    ): Response<CatalogoTiendaResponse>
+
+    @GET("api/movil/tienda/paypal-config")
+    suspend fun getPayPalConfig(
+        @Header("Authorization") token: String
+    ): Response<PayPalConfigResponse>
+
+    @POST("api/movil/tienda/crear-orden")
+    suspend fun crearOrdenTienda(
+        @Header("Authorization") token: String,
+        @Body request: CrearOrdenTiendaRequest
+    ): Response<CrearOrdenTiendaResponse>
+
+    @POST("api/movil/tienda/capturar-orden")
+    suspend fun capturarOrdenTienda(
+        @Header("Authorization") token: String,
+        @Body request: CapturarOrdenTiendaRequest
+    ): Response<CapturarOrdenTiendaResponse>
 }

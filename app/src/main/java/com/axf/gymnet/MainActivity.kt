@@ -144,6 +144,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.navEntreno).setOnClickListener  { startActivity(Intent(this, RutinasActivity::class.java)) }
         findViewById<View>(R.id.navDieta).setOnClickListener    { startActivity(Intent(this, DietasActivity::class.java)) }
         findViewById<View>(R.id.navReportar).setOnClickListener { startActivity(Intent(this, ReportarActivity::class.java)) }
+        findViewById<View>(R.id.navTienda).setOnClickListener   { startActivity(Intent(this, TiendaActivity::class.java)) }
         findViewById<View>(R.id.navChat).setOnClickListener {
             tvChatBadge.visibility = View.GONE
             startActivity(Intent(this, ChatListaActivity::class.java))
