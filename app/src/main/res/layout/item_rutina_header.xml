@@ -148,19 +148,42 @@
                 android:stateListAnimator="@null"
                 android:letterSpacing="0.02"/>
 
-            <!-- Botón Descargar PDF -->
-            <TextView
-                android:id="@+id/btnDescargarPdfRutina"
+            <!-- Fila para Descargar PDF y Eliminar Rutina -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:text="📄  Descargar PDF"
-                android:textColor="@color/axf_orange"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:layout_marginTop="8dp"
-                android:background="@android:color/transparent"
-                android:padding="8dp"/>
+                android:gravity="center">
+
+                <!-- Botón Descargar PDF -->
+                <TextView
+                    android:id="@+id/btnDescargarPdfRutina"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="📄  Descargar PDF"
+                    android:textColor="@color/axf_orange"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@android:color/transparent"
+                    android:padding="8dp"/>
+
+                <!-- Botón Eliminar Rutina -->
+                <TextView
+                    android:id="@+id/btnEliminarRutina"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="🗑️  Eliminar"
+                    android:textColor="@color/axf_error"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@android:color/transparent"
+                    android:padding="8dp"/>
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

@@ -59,11 +59,42 @@ class DietasActivity : AppCompatActivity() {
                     } else {
                         tvVacio.visibility = View.GONE
                         rv.visibility = View.VISIBLE
-                        rv.adapter = DietasAdapter(lista) { dieta ->
-                            val intent = Intent(this@DietasActivity, DietaDetalleActivity::class.java)
-                            intent.putExtra("id_dieta", dieta.id_dieta)
-                            startActivity(intent)
-                        }
+                        val dietasMutables = lista.toMutableList()
+                        rv.adapter = DietasAdapter(dietasMutables,
+                            onClick = { dieta ->
+                                val intent = Intent(this@DietasActivity, DietaDetalleActivity::class.java)
+                                intent.putExtra("id_dieta", dieta.id_dieta)
+                                startActivity(intent)
+                            },
+                            onDeleteClick = { dieta, position ->
+                                androidx.appcompat.app.AlertDialog.Builder(this@DietasActivity)
+                                    .setTitle("Eliminar dieta")
+                                    .setMessage("¿Estás seguro de que quieres eliminar esta dieta? Esta acción no se puede deshacer.")
+                                    .setPositiveButton("Eliminar") { _, _ ->
+                                        lifecycleScope.launch {
+                                            try {
+                                                val response = RetrofitClient.instance.eliminarDieta("Bearer $token", dieta.id_dieta)
+                                                if (response.isSuccessful) {
+                                                    Toast.makeText(this@DietasActivity, "Dieta eliminada", Toast.LENGTH_SHORT).show()
+                                                    dietasMutables.removeAt(position)
+                                                    rv.adapter?.notifyItemRemoved(position)
+                                                    rv.adapter?.notifyItemRangeChanged(position, dietasMutables.size)
+                                                    if (dietasMutables.isEmpty()) {
+                                                        tvVacio.visibility = View.VISIBLE
+                                                        rv.visibility = View.GONE
+                                                    }
+                                                } else {
+                                                    Toast.makeText(this@DietasActivity, "Error al eliminar dieta", Toast.LENGTH_SHORT).show()
+                                                }
+                                            } catch (e: Exception) {
+                                                Toast.makeText(this@DietasActivity, "Sin conexión", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                    .setNegativeButton("Cancelar", null)
+                                    .show()
+                            }
+                        )
                     }
                 } else {
                     val errorBody = resp.errorBody()?.string()
@@ -81,8 +112,9 @@ class DietasActivity : AppCompatActivity() {
 // ── Adapter ───────────────────────────────────────────────────────────────────
 
 class DietasAdapter(
-    private val items: List<DietaResumen>,
-    private val onClick: (DietaResumen) -> Unit
+    private val items: MutableList<DietaResumen>,
+    private val onClick: (DietaResumen) -> Unit,
+    private val onDeleteClick: (DietaResumen, Int) -> Unit
 ) : RecyclerView.Adapter<DietasAdapter.VH>() {
 
     // Formatos de entrada comunes de SQL/Node
@@ -97,6 +129,7 @@ class DietasAdapter(
         val tvFecha    : TextView = v.findViewById(R.id.tvDietaFecha)
         val tvNutri    : TextView = v.findViewById(R.id.tvDietaNutriologo)
         val tvComidas  : TextView = v.findViewById(R.id.tvDietaComidas)
+        val btnEliminar: TextView = v.findViewById(R.id.btnEliminarDieta)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -123,5 +156,6 @@ class DietasAdapter(
         holder.tvFecha.text = fechaFormateada
 
         holder.itemView.setOnClickListener { onClick(d) }
+        holder.btnEliminar.setOnClickListener { onDeleteClick(d, position) }
     }
 }

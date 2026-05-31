@@ -168,6 +168,35 @@ class RutinasActivity : AppCompatActivity() {
                     }
                 }
 
+            // ── Botón Eliminar Rutina ─────────────────────────────────────
+            header.findViewById<TextView>(R.id.btnEliminarRutina)
+                .setOnClickListener {
+                    AlertDialog.Builder(this)
+                        .setTitle("Eliminar rutina")
+                        .setMessage("¿Estás seguro de que quieres eliminar esta rutina? Esta acción no se puede deshacer.")
+                        .setPositiveButton("Eliminar") { _, _ ->
+                            lifecycleScope.launch {
+                                try {
+                                    val response = RetrofitClient.instance.eliminarRutina("Bearer $token", rutina.id_rutina)
+                                    if (response.isSuccessful) {
+                                        android.widget.Toast.makeText(this@RutinasActivity, "Rutina eliminada", android.widget.Toast.LENGTH_SHORT).show()
+                                        container.removeView(header)
+                                        if (container.childCount == 0) {
+                                            findViewById<LinearLayout>(R.id.layoutVacio).visibility = android.view.View.VISIBLE
+                                            container.visibility = android.view.View.GONE
+                                        }
+                                    } else {
+                                        android.widget.Toast.makeText(this@RutinasActivity, "Error al eliminar rutina", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(this@RutinasActivity, "Sin conexión", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                }
+
             container.addView(header)
         }
     }

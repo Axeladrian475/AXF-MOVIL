@@ -69,6 +69,12 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<List<RutinaResponse>>
 
+    @retrofit2.http.DELETE("api/suscriptores/movil/rutinas/{id}")
+    suspend fun eliminarRutina(
+        @Header("Authorization") token: String,
+        @Path("id") idRutina: Int
+    ): Response<Unit>
+
     @POST("api/suscriptores/movil/entrenamiento/serie")
     suspend fun guardarSerie(
         @Header("Authorization") token: String,
@@ -130,6 +136,12 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") idDieta: Int
     ): Response<DietaDetalle>
+
+    @retrofit2.http.DELETE("api/movil/nutricion/dietas/{id}")
+    suspend fun eliminarDieta(
+        @Header("Authorization") token: String,
+        @Path("id") idDieta: Int
+    ): Response<Unit>
 
     // ── REGISTROS FÍSICOS ──────────────────────────────────────────────────────
     @GET("api/suscriptores/movil/registros")
