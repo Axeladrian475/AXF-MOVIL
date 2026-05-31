@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvAforo:       TextView
     private lateinit var tvAforoPct:    TextView
     private lateinit var tvAforoHora:   TextView
+    private lateinit var tvNombreSucursal: TextView
     private lateinit var progressAforo: ProgressBar
     private lateinit var btnAforo:      Button
     private lateinit var tvPuntos:      TextView
@@ -158,6 +159,7 @@ class MainActivity : AppCompatActivity() {
         tvAforo       = findViewById(R.id.tvAforo)
         tvAforoPct    = findViewById(R.id.tvAforoPct)
         tvAforoHora   = findViewById(R.id.tvAforoHora)
+        tvNombreSucursal = findViewById(R.id.tvNombreSucursal)
         progressAforo = findViewById(R.id.progressAforo)
         btnAforo      = findViewById(R.id.btnActualizarAforo)
         tvPuntos      = findViewById(R.id.tvPuntos)
@@ -448,7 +450,7 @@ class MainActivity : AppCompatActivity() {
                     val a = resp.body()!!
                     val graficaFloats = a.grafica?.map { it.toFloat() } ?: listOf(0f, 0f, 0f, 0f, 0f, 0f)
                     runOnUiThread { 
-                        actualizarUIAforo(a.personas_dentro, a.capacidad_maxima, a.porcentaje) 
+                        actualizarUIAforo(a.personas_dentro, a.capacidad_maxima, a.porcentaje, a.nombre_sucursal) 
                         setupBarChart(findViewById(R.id.barChart), graficaFloats)
                     }
                 } else {
@@ -463,7 +465,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Actualizar UI del aforo
-    private fun actualizarUIAforo(dentro: Int, max: Int, pct: Int) {
+    private fun actualizarUIAforo(dentro: Int, max: Int, pct: Int, nombreSucursal: String) {
+        tvNombreSucursal.text = "Afluencia en $nombreSucursal"
         tvAforo.text    = "$dentro / $max personas"
         tvAforoPct.text = "$pct%"
 
@@ -543,11 +546,15 @@ class MainActivity : AppCompatActivity() {
         val horas   = listOf("6am", "9am", "12pm", "6pm", "8pm", "10pm")
         val entries = valores.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
         val dataSet = BarDataSet(entries, "").apply {
-            colors = valores.map { v ->
-                if (v >= 60f) resources.getColor(android.R.color.holo_orange_dark, theme)
-                else android.graphics.Color.parseColor("#CCCCCC")
+            color = android.graphics.Color.parseColor("#F26A21") // axf_orange
+            setDrawValues(true)
+            valueTextColor = android.graphics.Color.WHITE
+            valueTextSize = 11f
+            valueFormatter = object : com.github.mikephil.charting.formatter.ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return if (value > 0) value.toInt().toString() else ""
+                }
             }
-            setDrawValues(false)
         }
         chart.apply {
             data = BarData(dataSet).apply { barWidth = 0.6f }
@@ -556,17 +563,19 @@ class MainActivity : AppCompatActivity() {
             setDrawGridBackground(false)
             setTouchEnabled(false)
             xAxis.apply {
-                valueFormatter = IndexAxisValueFormatter(horas)
+                valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(horas)
                 position       = XAxis.XAxisPosition.BOTTOM
                 granularity    = 1f
                 setDrawGridLines(false)
-                textColor = android.graphics.Color.parseColor("#888888")
-                textSize  = 10f
+                textColor = android.graphics.Color.parseColor("#AAAAAA") // axf_text_secondary
+                textSize  = 12f
             }
             axisLeft.apply {
                 setDrawGridLines(false)
                 setDrawLabels(false)
                 axisMinimum = 0f
+                val maxVal = valores.maxOrNull() ?: 0f
+                axisMaximum = if (maxVal == 0f) 5f else maxVal * 1.3f
             }
             axisRight.isEnabled = false
             animateY(800)
