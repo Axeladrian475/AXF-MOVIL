@@ -85,11 +85,23 @@
         android:textSize="12sp"
         android:layout_marginBottom="12dp"/>
 
-    <!-- Botones de bloques (dinámicos) -->
-    <LinearLayout
-        android:id="@+id/containerGrupos"
+    <!-- Botones de bloques (dinámicos) — ScrollView para que se vean todos -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="ifContentScrolls"
+        android:fadingEdgeLength="16dp"
+        android:requiresFadingEdge="vertical">
+
+        <LinearLayout
+            android:id="@+id/containerGrupos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+    </ScrollView>
 
 </LinearLayout>

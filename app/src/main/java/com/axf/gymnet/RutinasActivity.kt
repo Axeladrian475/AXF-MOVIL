@@ -218,6 +218,16 @@ class RutinasActivity : AppCompatActivity() {
         }
 
         dialog.show()
+
+        // Limitar la altura del diálogo al 85% de la pantalla para que el ScrollView funcione
+        dialog.window?.let { win ->
+            val displayMetrics = resources.displayMetrics
+            val maxHeight = (displayMetrics.heightPixels * 0.85).toInt()
+            win.setLayout(
+                android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                maxHeight
+            )
+        }
     }
 
     private fun abrirEntrenamiento(
