@@ -100,6 +100,12 @@ class MainActivity : AppCompatActivity() {
         val barChart        = findViewById<BarChart>(R.id.barChart)
         tvChatBadge         = findViewById(R.id.tvChatBadge)
 
+        // Referencias Sesiones
+        val separatorSesiones    = findViewById<View>(R.id.separatorSesiones)
+        val llSesiones           = findViewById<View>(R.id.llSesiones)
+        val tvSesionesNutriologo = findViewById<TextView>(R.id.tvSesionesNutriologo)
+        val tvSesionesEntrenador = findViewById<TextView>(R.id.tvSesionesEntrenador)
+
         // Referencias racha
         tvRachaDias        = findViewById(R.id.tvRachaDias)
         tvRachaEstado      = findViewById(R.id.tvRachaEstado)
@@ -177,6 +183,13 @@ class MainActivity : AppCompatActivity() {
                         actualizarEstadoRacha(rachaDias)
                         // Puntos del suscriptor
                         tvPuntos.text = "${data.puntos} Pts"
+
+                        // Sesiones
+                        separatorSesiones.visibility = View.VISIBLE
+                        llSesiones.visibility = View.VISIBLE
+                        tvSesionesNutriologo.text = "${data.nutriologoCount} Sesiones"
+                        tvSesionesEntrenador.text = "${data.entrenadorCount} Sesiones"
+
                         prefs.edit()
                             .putBoolean("suscripcionActiva", data.activa)
                             .putString("fechaVencimiento",  fechaVence)

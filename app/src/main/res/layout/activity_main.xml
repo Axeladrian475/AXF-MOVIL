@@ -246,6 +246,104 @@
 
                         </LinearLayout>
 
+                        <!-- Sesiones de nutriólogo y entrenador -->
+                        <View
+                            android:id="@+id/separatorSesiones"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/axf_divider"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="12dp"
+                            android:visibility="gone"/>
+
+                        <LinearLayout
+                            android:id="@+id/llSesiones"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:baselineAligned="false"
+                            android:visibility="gone">
+
+                            <!-- Nutriólogo -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:background="@drawable/bg_stats_pill"
+                                android:padding="12dp"
+                                android:layout_marginEnd="6dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_nav_dieta"
+                                    app:tint="@color/axf_orange"
+                                    android:layout_marginEnd="8dp"/>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Nutriólogo"
+                                        android:textColor="@color/axf_text_secondary"
+                                        android:textSize="11sp"/>
+                                    <TextView
+                                        android:id="@+id/tvSesionesNutriologo"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0 Sesiones"
+                                        android:textColor="@color/axf_text_primary"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Entrenador -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:background="@drawable/bg_stats_pill"
+                                android:padding="12dp"
+                                android:layout_marginStart="6dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_nav_entreno"
+                                    app:tint="@color/axf_orange"
+                                    android:layout_marginEnd="8dp"/>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Entrenador"
+                                        android:textColor="@color/axf_text_secondary"
+                                        android:textSize="11sp"/>
+                                    <TextView
+                                        android:id="@+id/tvSesionesEntrenador"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0 Sesiones"
+                                        android:textColor="@color/axf_text_primary"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
