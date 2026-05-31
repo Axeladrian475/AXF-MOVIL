@@ -417,6 +417,95 @@
                                 android:paddingBottom="5dp"/>
                         </LinearLayout>
 
+                        <!-- Asistencia semanal (debajo de días de racha) -->
+                        <LinearLayout
+                            android:id="@+id/llAsistenciaSemana"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="@drawable/bg_stats_pill"
+                            android:padding="12dp"
+                            android:layout_marginBottom="14dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Esta semana"
+                                        android:textColor="@color/axf_text_primary"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:id="@+id/tvAsistenciaSemana"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0 de 7 asistencias"
+                                        android:textColor="@color/axf_text_secondary"
+                                        android:textSize="11sp"
+                                        android:layout_marginTop="2dp"/>
+
+                                    <TextView
+                                        android:id="@+id/tvResetSemana"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Se restablece cada domingo"
+                                        android:textColor="@color/axf_text_tertiary"
+                                        android:textSize="10sp"
+                                        android:layout_marginTop="4dp"/>
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:gravity="center"
+                                    android:paddingStart="8dp">
+
+                                    <TextView
+                                        android:id="@+id/tvFaltasRestantes"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0"
+                                        android:textColor="@color/axf_orange"
+                                        android:textSize="26sp"
+                                        android:textStyle="bold"/>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="faltas\ndisponibles"
+                                        android:textColor="@color/axf_text_secondary"
+                                        android:textSize="9sp"
+                                        android:gravity="center"
+                                        android:lineSpacingExtra="-2dp"/>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvVisitasPendientes"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:background="@color/axf_bg_surface"
+                                android:padding="8dp"
+                                android:text="Te quedan 5 visitas posibles al gym esta semana"
+                                android:textColor="@color/axf_success"
+                                android:textSize="11sp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+
                         <!-- Separador -->
                         <View
                             android:layout_width="match_parent"
@@ -496,7 +585,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Faltas permitidas por semana"
+                                    android:text="Faltas permitidas por semana (resetea domingo)"
                                     android:textColor="@color/axf_text_secondary"
                                     android:textSize="11sp"/>
                             </LinearLayout>

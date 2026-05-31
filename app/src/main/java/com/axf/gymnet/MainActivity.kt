@@ -66,6 +66,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvRachaProgresoMes: TextView
     private lateinit var btnDescansoMenos:   Button
     private lateinit var btnDescansoMas:     Button
+    private lateinit var tvAsistenciaSemana: TextView
+    private lateinit var tvFaltasRestantes:  TextView
+    private lateinit var tvResetSemana:      TextView
+    private lateinit var tvVisitasPendientes: TextView
     private var diasDescanso: Int = 0
 
     // Views de aforo
@@ -111,6 +115,10 @@ class MainActivity : AppCompatActivity() {
         tvRachaEstado      = findViewById(R.id.tvRachaEstado)
         tvDiasDescanso     = findViewById(R.id.tvDiasDescanso)
         tvRachaProgresoMes = findViewById(R.id.tvRachaProgresoMes)
+        tvAsistenciaSemana = findViewById(R.id.tvAsistenciaSemana)
+        tvFaltasRestantes  = findViewById(R.id.tvFaltasRestantes)
+        tvResetSemana      = findViewById(R.id.tvResetSemana)
+        tvVisitasPendientes = findViewById(R.id.tvVisitasPendientes)
         btnDescansoMenos = findViewById(R.id.btnDescansoMenos)
         btnDescansoMas   = findViewById(R.id.btnDescansoMas)
         diasDescanso     = prefs.getInt("diasDescanso", 0)
@@ -118,11 +126,32 @@ class MainActivity : AppCompatActivity() {
         tvRachaDias.text    = rachaSaved.toString()
         tvDiasDescanso.text = diasDescanso.toString()
         actualizarEstadoRacha(rachaSaved)
+        // Restore cached weekly data
+        val asistSaved  = prefs.getInt("asistenciasSemana", 0)
+        val faltasSaved = prefs.getInt("faltasRestantes", diasDescanso)
+        actualizarAsistenciaSemanal(
+            asistencias = asistSaved,
+            faltasRestantes = faltasSaved,
+            descanso = diasDescanso,
+            diasObligatorios = prefs.getInt("diasObligatorios", 7 - diasDescanso),
+            visitasPendientes = prefs.getInt("visitasPendientes", 0),
+            diasRestantesSemana = prefs.getInt("diasRestantesSemana", 0),
+            diasHastaReset = prefs.getInt("diasHastaReset", 0),
+            proximoReset = prefs.getString("proximoReset", null)
+        )
         btnDescansoMenos.setOnClickListener {
-            if (diasDescanso > 0) { diasDescanso--; tvDiasDescanso.text = diasDescanso.toString(); guardarDiasDescanso(diasDescanso) }
+            if (diasDescanso > 0) {
+                diasDescanso--
+                tvDiasDescanso.text = diasDescanso.toString()
+                guardarDiasDescanso(diasDescanso)
+            }
         }
         btnDescansoMas.setOnClickListener {
-            if (diasDescanso < 6) { diasDescanso++; tvDiasDescanso.text = diasDescanso.toString(); guardarDiasDescanso(diasDescanso) }
+            if (diasDescanso < 6) {
+                diasDescanso++
+                tvDiasDescanso.text = diasDescanso.toString()
+                guardarDiasDescanso(diasDescanso)
+            }
         }
 
         // Referencias aforo
@@ -181,6 +210,16 @@ class MainActivity : AppCompatActivity() {
                         tvRachaDias.text    = rachaDias.toString()
                         tvDiasDescanso.text = diasDescanso.toString()
                         actualizarEstadoRacha(rachaDias)
+                        actualizarAsistenciaSemanal(
+                            asistencias = data.asistencias_semana,
+                            faltasRestantes = data.faltas_restantes,
+                            descanso = diasDescanso,
+                            diasObligatorios = data.dias_obligatorios,
+                            visitasPendientes = data.visitas_pendientes,
+                            diasRestantesSemana = data.dias_restantes_semana,
+                            diasHastaReset = data.dias_hasta_reset,
+                            proximoReset = data.proximo_reset
+                        )
                         // Puntos del suscriptor
                         tvPuntos.text = "${data.puntos} Pts"
 
@@ -195,6 +234,13 @@ class MainActivity : AppCompatActivity() {
                             .putString("fechaVencimiento",  fechaVence)
                             .putInt("rachaDias",    rachaDias)
                             .putInt("diasDescanso", diasDescanso)
+                            .putInt("asistenciasSemana", data.asistencias_semana)
+                            .putInt("faltasRestantes",   data.faltas_restantes)
+                            .putInt("diasObligatorios",  data.dias_obligatorios)
+                            .putInt("visitasPendientes", data.visitas_pendientes)
+                            .putInt("diasRestantesSemana", data.dias_restantes_semana)
+                            .putInt("diasHastaReset",    data.dias_hasta_reset)
+                            .putString("proximoReset",   data.proximo_reset)
                             .apply()
                     }
                 } catch (_: Exception) {}
@@ -281,13 +327,111 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Actualiza la sección de asistencia semanal (debajo de la racha)
+    private fun actualizarAsistenciaSemanal(
+        asistencias: Int,
+        faltasRestantes: Int,
+        descanso: Int,
+        diasObligatorios: Int = 7 - descanso,
+        visitasPendientes: Int = 0,
+        diasRestantesSemana: Int = 0,
+        diasHastaReset: Int = 0,
+        proximoReset: String? = null
+    ) {
+        val obligatorios = if (diasObligatorios > 0) diasObligatorios else (7 - descanso).coerceAtLeast(1)
+        tvAsistenciaSemana.text = "$asistencias de $obligatorios asistencias esta semana"
+        tvFaltasRestantes.text = faltasRestantes.toString()
+
+        val colorFaltas = if (faltasRestantes > 0)
+            getColor(android.R.color.holo_green_light)
+        else
+            getColor(android.R.color.holo_red_light)
+        tvFaltasRestantes.setTextColor(colorFaltas)
+
+        val resetText = when {
+            diasHastaReset <= 0 -> "Se restablece cada domingo"
+            diasHastaReset == 1 -> "Se restablece mañana (domingo)"
+            proximoReset != null -> {
+                val fechaFmt = fmtFechaCorta(proximoReset)
+                "Se restablece el domingo $fechaFmt"
+            }
+            else -> "Se restablece en $diasHastaReset días (domingo)"
+        }
+        tvResetSemana.text = resetText
+
+        tvVisitasPendientes.text = when {
+            visitasPendientes <= 0 && asistencias >= obligatorios ->
+                "¡Meta semanal cumplida! Puedes seguir asistiendo sin romper tu racha."
+            visitasPendientes <= 0 ->
+                "Meta de asistencias alcanzada. Te quedan $faltasRestantes falta(s) permitida(s)."
+            diasRestantesSemana <= 0 ->
+                "Te faltan $visitasPendientes visita(s) obligatoria(s) esta semana."
+            else ->
+                "Te faltan $visitasPendientes visita(s) obligatoria(s) y quedan $diasRestantesSemana día(s) en la semana."
+        }
+
+        val colorVisitas = when {
+            faltasRestantes == 0 && visitasPendientes > 0 -> getColor(android.R.color.holo_red_light)
+            visitasPendientes <= 0 -> getColor(R.color.axf_success)
+            else -> getColor(R.color.axf_text_secondary)
+        }
+        tvVisitasPendientes.setTextColor(colorVisitas)
+    }
+
+    private fun fmtFechaCorta(iso: String): String = try {
+        val inFmt  = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val outFmt = SimpleDateFormat("dd/MM", Locale.getDefault())
+        outFmt.format(inFmt.parse(iso.take(10))!!)
+    } catch (_: Exception) { iso.take(10) }
+
+    private fun refrescarSuscripcion() {
+        if (token.isEmpty()) return
+        lifecycleScope.launch {
+            try {
+                val resp = RetrofitClient.instance.getSuscripcion("Bearer $token")
+                if (resp.isSuccessful) {
+                    val data = resp.body() ?: return@launch
+                    diasDescanso = data.dias_descanso_semana
+                    tvDiasDescanso.text = diasDescanso.toString()
+                    actualizarAsistenciaSemanal(
+                        asistencias = data.asistencias_semana,
+                        faltasRestantes = data.faltas_restantes,
+                        descanso = diasDescanso,
+                        diasObligatorios = data.dias_obligatorios,
+                        visitasPendientes = data.visitas_pendientes,
+                        diasRestantesSemana = data.dias_restantes_semana,
+                        diasHastaReset = data.dias_hasta_reset,
+                        proximoReset = data.proximo_reset
+                    )
+                    getSharedPreferences("axf_prefs", MODE_PRIVATE).edit()
+                        .putInt("diasDescanso", diasDescanso)
+                        .putInt("asistenciasSemana", data.asistencias_semana)
+                        .putInt("faltasRestantes", data.faltas_restantes)
+                        .putInt("diasObligatorios", data.dias_obligatorios)
+                        .putInt("visitasPendientes", data.visitas_pendientes)
+                        .apply()
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
     // Sincroniza días de descanso con el servidor
     private fun guardarDiasDescanso(dias: Int) {
         getSharedPreferences("axf_prefs", MODE_PRIVATE).edit().putInt("diasDescanso", dias).apply()
+        val obligatorios = 7 - dias
+        actualizarAsistenciaSemanal(
+            asistencias = getSharedPreferences("axf_prefs", MODE_PRIVATE).getInt("asistenciasSemana", 0),
+            faltasRestantes = dias,
+            descanso = dias,
+            diasObligatorios = obligatorios,
+            visitasPendientes = maxOf(obligatorios - getSharedPreferences("axf_prefs", MODE_PRIVATE).getInt("asistenciasSemana", 0), 0)
+        )
         if (token.isEmpty()) return
         lifecycleScope.launch {
-            try { RetrofitClient.instance.actualizarDescanso("Bearer $token", DescansoRequest(dias)) }
-            catch (_: Exception) {}
+            try {
+                RetrofitClient.instance.actualizarDescanso("Bearer $token", DescansoRequest(dias))
+                refrescarSuscripcion()
+            } catch (_: Exception) {}
         }
     }
 
@@ -341,6 +485,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         aforoHandler.post(aforoRunnable)
+        refrescarSuscripcion()
         if (token.isNotEmpty()) {
             lifecycleScope.launch {
                 try {

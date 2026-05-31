@@ -10,7 +10,16 @@ data class SuscripcionResponse(
     val racha_dias: Int = 0,
     val dias_descanso_semana: Int = 0,
     val dias_restantes: Int = 0,
-    val puntos: Int = 0
+    val puntos: Int = 0,
+    val asistencias_semana: Int = 0,
+    val faltas_restantes: Int = 0,
+    val faltas_permitidas_semana: Int = 0,
+    val faltas_usadas: Int = 0,
+    val dias_obligatorios: Int = 7,
+    val visitas_pendientes: Int = 0,
+    val dias_restantes_semana: Int = 0,
+    val dias_hasta_reset: Int = 0,
+    val proximo_reset: String? = null
 ) {
     val nutriologoCount: Int
         get() = totales?.sesiones_nutriologo ?: sesiones_nutriologo_restantes ?: 0
