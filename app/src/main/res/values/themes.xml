@@ -17,9 +17,23 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        
+        <!-- Fix para AlertDialogs -->
+        <item name="alertDialogTheme">@style/AxFAlertDialog</item>
+        <item name="materialAlertDialogTheme">@style/AxFAlertDialog</item>
     </style>
 
     <style name="Theme.AxFGymNet" parent="Base.Theme.AxFGymNet" />
+
+    <style name="AxFAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <!-- Force dark background and white text for dialogs -->
+        <item name="colorSurface">@color/axf_bg_card</item>
+        <item name="colorOnSurface">@color/axf_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/axf_text_secondary</item>
+        <item name="colorPrimary">@color/axf_orange</item>
+        <!-- For older AppCompat dialogs -->
+        <item name="android:textColorPrimary">@color/axf_text_primary</item>
+    </style>
 
     <!-- Dialog de descanso -->
     <style name="DialogDescanso" parent="Theme.AppCompat.Dialog">
