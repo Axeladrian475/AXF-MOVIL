@@ -34,7 +34,13 @@ class ReportesPublicosAdapter(
         val r = items[pos]
         h.tvCategoria.text = formatCategoria(r.categoria)
         h.tvDescripcion.text = r.descripcion
-        h.tvEstado.text = formatEstado(r.estado)
+        var estadoTexto = formatEstado(r.estado)
+        if (r.estado == "En_Proceso" && !r.en_proceso_por_nombre.isNullOrBlank()) {
+            estadoTexto += " (Atiende: ${r.en_proceso_por_nombre})"
+        } else if (r.estado == "Resuelto" && !r.resuelto_por_nombre.isNullOrBlank()) {
+            estadoTexto += " (Resolvió: ${r.resuelto_por_nombre})"
+        }
+        h.tvEstado.text = estadoTexto
         h.tvSumados.text = "👥 ${r.sumados} personas reportaron esto"
         h.tvStrikes.text = if (r.num_strikes > 0) "⚠ ${r.num_strikes} strike(s)" else ""
         h.tvStrikes.visibility = if (r.num_strikes > 0) View.VISIBLE else View.GONE

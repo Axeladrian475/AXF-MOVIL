@@ -42,7 +42,9 @@ data class ReportePublico(
     val num_strikes: Int,
     val creado_en: String,
     val sumados: Int,            // cuántos se sumaron
-    val ya_sumado: Int            // MySQL tinyint: 0 ó 1 — si el usuario ya se sumó
+    val ya_sumado: Int,           // MySQL tinyint: 0 ó 1 — si el usuario ya se sumó
+    val en_proceso_por_nombre: String?,
+    val resuelto_por_nombre: String?
 )
 
 // ── Response de lista de reportes públicos ─────────────────────────────────────
@@ -75,7 +77,9 @@ data class MiReporte(
     val estado: String,
     val num_strikes: Int,
     val creado_en: String,
-    val nombre_personal_reportado: String?
+    val nombre_personal_reportado: String?,
+    val en_proceso_por_nombre: String?,
+    val resuelto_por_nombre: String?
 )
 
 data class MisReportesResponse(

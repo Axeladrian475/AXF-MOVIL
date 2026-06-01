@@ -35,7 +35,13 @@ class MisReportesAdapter(
         h.tvCategoria.text = formatCategoria(r.categoria)
         h.tvSucursal.text = "📍 ${r.nombre_sucursal}"
         h.tvDescripcion.text = r.descripcion
-        h.tvEstado.text = formatEstado(r.estado)
+        var estadoTexto = formatEstado(r.estado)
+        if (r.estado == "En_Proceso" && !r.en_proceso_por_nombre.isNullOrBlank()) {
+            estadoTexto += " (Atiende: ${r.en_proceso_por_nombre})"
+        } else if (r.estado == "Resuelto" && !r.resuelto_por_nombre.isNullOrBlank()) {
+            estadoTexto += " (Resolvió: ${r.resuelto_por_nombre})"
+        }
+        h.tvEstado.text = estadoTexto
         h.tvFecha.text = "📅 ${r.creado_en.take(10)}"
         h.tvPrivado.text = if (r.es_privado != 0) "🔒 Privado" else "🌐 Público"
 
