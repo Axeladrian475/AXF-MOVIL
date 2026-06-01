@@ -436,7 +436,7 @@ class ReportarActivity : AppCompatActivity() {
                 val res = RetrofitClient.instance.getReportesPublicos("Bearer $token", idSucursal)
                 pbPublicos.visibility = View.GONE
                 if (res.isSuccessful) {
-                    val lista = res.body()?.reportes ?: emptyList()
+                    val lista = res.body()?.reportes?.sortedByDescending { it.creado_en } ?: emptyList()
                     tvSinReportes.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
                     rvReportesPublicos.visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
                     rvReportesPublicos.adapter = ReportesPublicosAdapter(lista) { id -> sumarseReporte(id) }
