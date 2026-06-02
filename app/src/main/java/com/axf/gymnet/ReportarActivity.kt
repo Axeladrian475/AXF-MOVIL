@@ -465,9 +465,27 @@ class ReportarActivity : AppCompatActivity() {
                     val lista = res.body()?.reportes ?: emptyList()
                     tvSinMisReportes.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
                     rvMisReportes.visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
-                    rvMisReportes.adapter = MisReportesAdapter(lista)
+                    rvMisReportes.adapter = MisReportesAdapter(lista) { idReporte ->
+                        reenviarReporteASucursal(idReporte)
+                    }
                 }
             } catch (_: Exception) { pbMisReportes.visibility = View.GONE }
+        }
+    }
+
+    private fun reenviarReporteASucursal(idReporte: Int) {
+        lifecycleScope.launch {
+            try {
+                val res = RetrofitClient.instance.reenviarReporteASucursal("Bearer $token", idReporte)
+                val msg = res.body()?.message ?: if (res.isSuccessful) "Reporte reenviado" else "Error al reenviar"
+                Toast.makeText(this@ReportarActivity, msg, Toast.LENGTH_SHORT).show()
+                // Refrescar la lista para actualizar el estado del botón
+                cargarMisReportes()
+            } catch (e: Exception) {
+                Toast.makeText(this@ReportarActivity, "Sin conexión: ${e.message}", Toast.LENGTH_SHORT).show()
+                // Refrescar para restaurar el estado del botón
+                cargarMisReportes()
+            }
         }
     }
 }

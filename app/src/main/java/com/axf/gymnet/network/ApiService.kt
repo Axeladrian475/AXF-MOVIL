@@ -20,6 +20,7 @@ import com.axf.gymnet.data.MisReportesResponse
 import com.axf.gymnet.data.NoLeidosResponse
 import com.axf.gymnet.data.PersonalItem
 import com.axf.gymnet.data.ReportesPublicosResponse
+import com.axf.gymnet.data.ReenviarReporteResponse
 import com.axf.gymnet.data.RutinaResponse
 import com.axf.gymnet.data.SucursalItem
 import com.axf.gymnet.data.SumarseReporteResponse
@@ -217,6 +218,13 @@ interface ApiService {
     suspend fun getMisReportes(
         @Header("Authorization") token: String
     ): Response<MisReportesResponse>
+
+    /** Reenviar reporte al usuario Sucursal (habilitado al tercer strike) */
+    @POST("api/reportes/reenviar-sucursal/{id_reporte}")
+    suspend fun reenviarReporteASucursal(
+        @Header("Authorization") token: String,
+        @Path("id_reporte") idReporte: Int
+    ): Response<ReenviarReporteResponse>
 
     // ── TIENDA (suscripciones y promociones) ──────────────────────────────────
 

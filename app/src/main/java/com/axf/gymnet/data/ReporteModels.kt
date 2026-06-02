@@ -76,6 +76,7 @@ data class MiReporte(
     val es_privado: Int,          // MySQL tinyint devuelve 0/1, no true/false
     val estado: String,
     val num_strikes: Int,
+    val reenviado_sucursal: Int,  // MySQL tinyint: 0 ó 1 — si ya fue reenviado al usuario Sucursal
     val creado_en: String,
     val nombre_personal_reportado: String?,
     val en_proceso_por_nombre: String?,
@@ -85,4 +86,10 @@ data class MiReporte(
 data class MisReportesResponse(
     val success: Boolean,
     val reportes: List<MiReporte>
+)
+
+// ── Reenviar reporte al usuario Sucursal (tercer strike) ──────────────────────
+data class ReenviarReporteResponse(
+    val success: Boolean,
+    val message: String
 )

@@ -107,5 +107,31 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:visibility="gone"/>
+
+        <!-- Botón reenviar a Sucursal (visible solo con 3+ strikes y no reenviado) -->
+        <Button
+            android:id="@+id/btnReenviarSucursal"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:text="📩 Reenviar reporte a Sucursal"
+            android:textColor="@color/axf_text_primary"
+            android:backgroundTint="@color/axf_orange"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:stateListAnimator="@null"
+            android:visibility="gone"/>
+
+        <!-- Etiqueta de ya reenviado -->
+        <TextView
+            android:id="@+id/tvYaReenviado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✅ Reporte reenviado a Sucursal"
+            android:textColor="#27AE60"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

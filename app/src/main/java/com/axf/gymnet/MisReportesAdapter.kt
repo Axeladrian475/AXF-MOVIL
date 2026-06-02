@@ -3,12 +3,14 @@ package com.axf.gymnet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.axf.gymnet.data.MiReporte
 
 class MisReportesAdapter(
-    private val items: List<MiReporte>
+    private val items: List<MiReporte>,
+    private val onReenviar: ((Int) -> Unit)? = null
 ) : RecyclerView.Adapter<MisReportesAdapter.VH>() {
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {
@@ -20,6 +22,8 @@ class MisReportesAdapter(
         val tvPersonal: TextView = v.findViewById(R.id.tvMiPersonalReporte)
         val tvStrikes: TextView = v.findViewById(R.id.tvMiStrikes)
         val tvPrivado: TextView = v.findViewById(R.id.tvMiPrivado)
+        val btnReenviarSucursal: Button = v.findViewById(R.id.btnReenviarSucursal)
+        val tvYaReenviado: TextView = v.findViewById(R.id.tvYaReenviado)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -59,6 +63,33 @@ class MisReportesAdapter(
             else -> "🚨 Strike 3 — Escalada máxima"
         }
         h.tvStrikes.visibility = if (r.num_strikes > 0) View.VISIBLE else View.GONE
+
+        // ── Reenvío al usuario Sucursal (habilitado al tercer strike) ──────────
+        val tercerStrike = r.num_strikes >= 3
+        val yaReenviado = r.reenviado_sucursal != 0
+        val reporteNoResuelto = r.estado != "Resuelto"
+
+        if (tercerStrike && reporteNoResuelto) {
+            if (yaReenviado) {
+                // Ya fue reenviado: mostrar etiqueta de confirmación
+                h.btnReenviarSucursal.visibility = View.GONE
+                h.tvYaReenviado.visibility = View.VISIBLE
+            } else {
+                // Aún no reenviado: mostrar botón
+                h.btnReenviarSucursal.visibility = View.VISIBLE
+                h.tvYaReenviado.visibility = View.GONE
+                h.btnReenviarSucursal.isEnabled = true
+                h.btnReenviarSucursal.text = "📩 Reenviar reporte a Sucursal"
+                h.btnReenviarSucursal.setOnClickListener {
+                    h.btnReenviarSucursal.isEnabled = false
+                    h.btnReenviarSucursal.text = "Enviando..."
+                    onReenviar?.invoke(r.id_reporte)
+                }
+            }
+        } else {
+            h.btnReenviarSucursal.visibility = View.GONE
+            h.tvYaReenviado.visibility = View.GONE
+        }
     }
 
     private fun formatCategoria(cat: String) = when (cat) {
