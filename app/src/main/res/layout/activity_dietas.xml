@@ -33,6 +33,16 @@
             android:fontFamily="@font/jockey_one"/>
     </LinearLayout>
 
+    <!-- Botón a Consumo Diario -->
+    <Button
+        android:id="@+id/btnIrAConsumo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Mi Consumo Diario"
+        android:backgroundTint="#E87722"
+        android:textColor="#FFFFFF" />
+
     <!-- Empty state -->
     <TextView
         android:id="@+id/tvDietasVacio"

@@ -35,6 +35,9 @@ class DietasActivity : AppCompatActivity() {
 
         rv.layoutManager = LinearLayoutManager(this)
         tvBack.setOnClickListener { finish() }
+        findViewById<View>(R.id.btnIrAConsumo).setOnClickListener {
+            startActivity(Intent(this, ConsumoDiarioActivity::class.java))
+        }
 
         if (token.isEmpty()) {
             Toast.makeText(this, "Sesión no válida. Inicia sesión de nuevo.", Toast.LENGTH_LONG).show()
@@ -99,7 +102,23 @@ class DietasActivity : AppCompatActivity() {
                 } else {
                     val errorBody = resp.errorBody()?.string()
                     Log.e(TAG, "Error API ${resp.code()}: $errorBody")
-                    Toast.makeText(this@DietasActivity, "Error del servidor (${resp.code()})", Toast.LENGTH_SHORT).show()
+                    
+                    var errorMessage = "Error del servidor (${resp.code()})"
+                    if (resp.code() == 403 && !errorBody.isNullOrEmpty()) {
+                        try {
+                            val json = org.json.JSONObject(errorBody)
+                            if (json.has("message")) {
+                                errorMessage = json.getString("message")
+                            }
+                        } catch (e: Exception) {
+                            // Ignore parsing error
+                        }
+                    }
+                    
+                    tvVacio.text = errorMessage
+                    tvVacio.visibility = View.VISIBLE
+                    rv.visibility = View.GONE
+                    Toast.makeText(this@DietasActivity, errorMessage, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error de conexión/parseo", e)

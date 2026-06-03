@@ -72,7 +72,19 @@ class RutinasActivity : AppCompatActivity() {
                         renderizarRutinas(containerList, rutinas, token)
                     }
                 } else {
-                    tvVacio.text = "Error al cargar rutinas (${resp.code()})"
+                    val errorBody = resp.errorBody()?.string()
+                    var errorMessage = "Error al cargar rutinas (${resp.code()})"
+                    if (resp.code() == 403 && !errorBody.isNullOrEmpty()) {
+                        try {
+                            val json = org.json.JSONObject(errorBody)
+                            if (json.has("message")) {
+                                errorMessage = json.getString("message")
+                            }
+                        } catch (e: Exception) {
+                            // Ignorar error
+                        }
+                    }
+                    tvVacio.text = errorMessage
                     layoutVacio.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {

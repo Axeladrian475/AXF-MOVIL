@@ -249,4 +249,23 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: CapturarOrdenTiendaRequest
     ): Response<CapturarOrdenTiendaResponse>
+
+    // ── CONSUMO DIARIO ─────────────────────────────────────────────────────────
+    @GET("api/movil/nutricion/consumo")
+    suspend fun getConsumoDiario(
+        @Header("Authorization") token: String,
+        @Query("fecha") fecha: String
+    ): Response<List<com.axf.gymnet.data.ConsumoDiario>>
+
+    @POST("api/movil/nutricion/consumo")
+    suspend fun agregarConsumoDiario(
+        @Header("Authorization") token: String,
+        @Body request: com.axf.gymnet.data.AgregarConsumoRequest
+    ): Response<com.axf.gymnet.data.AgregarConsumoResponse>
+
+    @retrofit2.http.DELETE("api/movil/nutricion/consumo/{id}")
+    suspend fun eliminarConsumoDiario(
+        @Header("Authorization") token: String,
+        @Path("id") idConsumo: Int
+    ): Response<com.axf.gymnet.data.GenericResponse>
 }
