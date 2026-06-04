@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.axf.gymnet.InsetUtils.pedirPermisoNotificacionesSiNecesario
 import com.axf.gymnet.data.DescansoRequest
 import com.axf.gymnet.network.RetrofitClient
@@ -40,6 +41,7 @@ private fun Int.dpToPx(context: Context): Int =
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var tvChatBadge: TextView
     private var token: String = ""
     private var selectedSucursalId: Int? = null
@@ -95,6 +97,12 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         token = prefs.getString("token", "") ?: ""
+
+        swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            cargarAforo()
+            refrescarSuscripcion { swipeRefreshLayout.isRefreshing = false }
+        }
 
         // Referencias UI
         val tvNombreUsuario = findViewById<TextView>(R.id.tvNombreUsuario)
@@ -388,15 +396,39 @@ class MainActivity : AppCompatActivity() {
         outFmt.format(inFmt.parse(iso.take(10))!!)
     } catch (_: Exception) { iso.take(10) }
 
-    private fun refrescarSuscripcion() {
-        if (token.isEmpty()) return
+    private fun refrescarSuscripcion(onFinish: () -> Unit = {}) {
+        if (token.isEmpty()) {
+            onFinish()
+            return
+        }
         lifecycleScope.launch {
             try {
                 val resp = RetrofitClient.instance.getSuscripcion("Bearer $token")
                 if (resp.isSuccessful) {
                     val data = resp.body() ?: return@launch
+                    val fechaVence = data.vencimiento_final ?: ""
+                    
+                    actualizarUIEstado(data.activa, fechaVence, findViewById(R.id.tvEstadoIcono), findViewById(R.id.tvEstadoSuscripcion), findViewById(R.id.tvVencimiento))
+                    
+                    val tipoPlan = data.nombre_plan ?: ""
+                    val tvTipoPlan = findViewById<TextView>(R.id.tvTipoPlan)
+                    tvTipoPlan.text = tipoPlan
+                    tvTipoPlan.visibility = if (tipoPlan.isNotEmpty()) View.VISIBLE else View.GONE
+                    
+                    findViewById<TextView>(R.id.tvDiasRestantes).text = calcularDiasRestantes(fechaVence)
+                    tvPuntos.text = "${data.puntos} Pts"
+                    
+                    findViewById<View>(R.id.separatorSesiones).visibility = View.VISIBLE
+                    findViewById<View>(R.id.llSesiones).visibility = View.VISIBLE
+                    findViewById<TextView>(R.id.tvSesionesNutriologo).text = "${data.nutriologoCount} Sesiones"
+                    findViewById<TextView>(R.id.tvSesionesEntrenador).text = "${data.entrenadorCount} Sesiones"
+
                     diasDescanso = data.dias_descanso_semana
                     tvDiasDescanso.text = diasDescanso.toString()
+                    val rachaDias = data.racha_dias
+                    tvRachaDias.text = rachaDias.toString()
+                    actualizarEstadoRacha(rachaDias)
+
                     actualizarAsistenciaSemanal(
                         asistencias = data.asistencias_semana,
                         faltasRestantes = data.faltas_restantes,
@@ -408,14 +440,23 @@ class MainActivity : AppCompatActivity() {
                         proximoReset = data.proximo_reset
                     )
                     getSharedPreferences("axf_prefs", MODE_PRIVATE).edit()
+                        .putBoolean("suscripcionActiva", data.activa)
+                        .putString("fechaVencimiento", fechaVence)
+                        .putInt("rachaDias", rachaDias)
                         .putInt("diasDescanso", diasDescanso)
                         .putInt("asistenciasSemana", data.asistencias_semana)
                         .putInt("faltasRestantes", data.faltas_restantes)
                         .putInt("diasObligatorios", data.dias_obligatorios)
                         .putInt("visitasPendientes", data.visitas_pendientes)
+                        .putInt("diasRestantesSemana", data.dias_restantes_semana)
+                        .putInt("diasHastaReset", data.dias_hasta_reset)
+                        .putString("proximoReset", data.proximo_reset)
                         .apply()
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            } finally {
+                onFinish()
+            }
         }
     }
 

@@ -106,6 +106,7 @@ class ChatActivity : AppCompatActivity(), ChatSocketService.ChatSocketListener {
     private fun setupLogic() {
         val prefs = getSharedPreferences("axf_prefs", MODE_PRIVATE)
         token = prefs.getString("token", "") ?: ""
+        val miFotoUrl = prefs.getString("foto_suscriptor", "") ?: ""
         idPersonal = intent.getIntExtra("id_personal", 0)
         val nombre = intent.getStringExtra("nombre_personal") ?: "Chat"
         fotoPersonal = intent.getStringExtra("foto_personal") ?: ""
@@ -117,6 +118,7 @@ class ChatActivity : AppCompatActivity(), ChatSocketService.ChatSocketListener {
         val lm = LinearLayoutManager(this).apply { stackFromEnd = true }
         adapter = ChatMensajesAdapter(mutableListOf(), "suscriptor",
             fotoPersonalUrl = fotoPersonal.ifBlank { null },
+            fotoSuscriptorUrl = miFotoUrl.ifBlank { null },
             nombrePersonal = nombre,
             nombreSuscriptor = "Tú")
         

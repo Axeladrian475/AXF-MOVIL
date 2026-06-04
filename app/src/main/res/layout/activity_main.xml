@@ -13,12 +13,17 @@
     android:background="@color/axf_bg_deep">
 
     <!-- CONTENIDO SCROLLEABLE -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/mainScrollView"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="72dp">
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/mainScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="72dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -821,6 +826,7 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- ── BARRA DE NAVEGACIÓN INFERIOR ── -->
     <LinearLayout
