@@ -29,7 +29,7 @@ object RetrofitClient {
      *
      * ─────────────────────────────────────────────────────────────────────────
      */
-    const val BASE_URL = "http://10.0.2.2:3001/"
+    const val BASE_URL = "https://axfgymnet.com/"
 
     // OkHttpClient con timeouts extendidos para soportar upload de imágenes
     private val okHttpClient = OkHttpClient.Builder()
